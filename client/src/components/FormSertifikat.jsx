@@ -87,19 +87,6 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-        {/* Nama */}
-        <div>
-          <label className="block text-sm font-medium mb-5">Nama</label>
-          <input
-            type="text"
-            name="nama"
-            value={formData.nama}
-            onChange={handleChange}
-            placeholder="Anisa Rahmah Kusuma"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
         {/* Jenis Sertifikat */}
         <div>
           <label className="block text-sm font-medium mb-5">
@@ -119,13 +106,11 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
 
         {/* Jenis Olahraga / Akademik */}
         <div>
-          <label className="block text-sm font-medium mb-5">
-            Jenis Olahraga / Akademik
-          </label>
+          <label className="block text-sm font-medium mb-5">Bidang Lomba</label>
           <input
             type="text"
             name="jenislomba"
-            value={formData.jenislomba}
+            value={formData.bidanglomba}
             onChange={handleChange}
             placeholder="Futsal / Matematika"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"

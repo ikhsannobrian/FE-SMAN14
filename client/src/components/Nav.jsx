@@ -10,7 +10,6 @@ const Nav = ({ isDashboard, onToggleSidebar }) => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Tutup dropdown jika klik di luar area dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -22,20 +21,13 @@ const Nav = ({ isDashboard, onToggleSidebar }) => {
   }, []);
 
   const handleLogout = () => {
-    // Proses logout
-    console.log("Logout successful");
-    // Hapus token atau data session jika ada
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
-    // Redirect ke halaman login
-    if (isDashboard) {
-      navigate("/login-admin"); // Untuk admin
-    } else {
-      navigate("/login"); // Untuk layanan konseling
-    }
+    navigate("/");
   };
 
   const handleLogoutClick = () => {
+    setDropdownOpen(false);
     setShowLogoutAlert(true);
   };
 
@@ -48,7 +40,6 @@ const Nav = ({ isDashboard, onToggleSidebar }) => {
       <nav className="bg-white shadow px-4 sm:px-6 py-3 flex items-center justify-between">
         {/* Kiri: Logo dan Judul */}
         <div className="flex items-center">
-          {/* Hanya tampilkan hamburger jika di dashboard */}
           {isDashboard && (
             <button onClick={onToggleSidebar} className="mr-2 sm:mr-3">
               <Menu size={24} />
@@ -72,37 +63,55 @@ const Nav = ({ isDashboard, onToggleSidebar }) => {
           </div>
         </div>
 
-        {/* Kanan: Dashboard = dropdown admin, Layanan = tombol logout */}
-        {isDashboard ? (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-1 sm:gap-2"
-            >
-              <span className="text-xs sm:text-sm">Admin</span>
-              <User size={18} className="sm:size-5" />
-            </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
-                <button
-                  onClick={handleLogoutClick}
-                  className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-gray-100 flex items-center gap-1"
-                >
-                  <LogOut size={14} />
-                  <span>Logout</span>
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
+        {/* Kanan */}
+        <div className="relative" ref={dropdownRef}>
           <button
-            onClick={handleLogoutClick}
-            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+            onClick={() => setDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-1 sm:gap-2"
           >
-            <LogOut size={18} className="sm:size-5" />
-            <span className="hidden sm:inline">Logout</span>
+            {!isDashboard && <User size={20} className="sm:size-5" />}
+            {isDashboard && (
+              <>
+                <span className="text-xs sm:text-sm">Admin</span>
+                <User size={18} className="sm:size-5" />
+              </>
+            )}
           </button>
-        )}
+
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow z-10">
+              {!isDashboard && (
+                <>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      navigate("/profile");
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      navigate("/layanan-konseling");
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    Layanan Konseling
+                  </button>
+                </>
+              )}
+              <button
+                onClick={handleLogoutClick}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 text-red-600"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Alert Logout */}

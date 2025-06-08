@@ -1,11 +1,10 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // component
-import HomeView from "./page/HomeView";
 import LoginView from "./page/auth/LoginView";
-import RegisterView from "./page/auth/RegisterView";
+import FormRegister from "./page/auth/RegisterView";
 import PublicLayout from "./Layouts/PublicLayout";
-import AdminLayout from "./Layouts/AdminLayout"; // ✅ Import AdminLayout
+import AdminLayout from "./Layouts/AdminLayout"; //
 import DashboardView from "./page/DashboardView";
 import LayananKonseling from "./page/LayananKonseling";
 import FormJanjianKonseling from "./page/FormJkView";
@@ -26,6 +25,7 @@ import FormUpdateSertifikat from "./page/FormUpdateSertifikat";
 import FormUpdateKesiswaan from "./page/FormUpdateKesiswaan";
 import UserList from "./components/UserList";
 import FormUpdateASView from "./page/FormUpdateASView";
+import ProfileView from "./page/ProfileView";
 
 const router = createBrowserRouter([
   {
@@ -34,21 +34,17 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomeView />,
+        element: <LoginView />,
       },
     ],
   },
   {
-    path: "/login",
-    element: <LoginView />,
-  },
-  {
-    path: "/login-admin",
-    element: <LoginView />,
-  },
-  {
     path: "/register",
-    element: <RegisterView />,
+    element: <FormRegister />,
+  },
+  {
+    path: "/profile",
+    element: <ProfileView />,
   },
   {
     path: "/layanan-konseling",

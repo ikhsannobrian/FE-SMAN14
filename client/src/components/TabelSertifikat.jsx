@@ -11,7 +11,7 @@ const TabelSertifikat = () => {
     nama: "",
     jenissertifikat: "",
     penyelenggaralomba: "",
-    jenislomba: "",
+    bidanglomba: "",
     mulailomba: "",
     selesailomba: "",
     tingkatlomba: "",
@@ -25,7 +25,7 @@ const TabelSertifikat = () => {
       nama: "Fauzan Arbhi",
       jenissertifikat: "Akademik",
       penyelenggaralomba: "POPDA JAWA BARAT 2024",
-      jenislomba: "Matematika",
+      bidanglomba: "Matematika",
       mulailomba: "01-01-2023",
       selesailomba: "31-12-2023",
       tingkatlomba: "Nasional",
@@ -36,7 +36,7 @@ const TabelSertifikat = () => {
       nama: "Fanisa Rizki",
       jenissertifikat: "Non-Akademik",
       penyelenggaralomba: "PPOP JAWA BARAT 2024",
-      jenislomba: "Basket",
+      bidanglomba: "Basket",
       mulailomba: "01-03-2023",
       selesailomba: "32-12-2023",
       tingkatlomba: "Kota",
@@ -47,7 +47,7 @@ const TabelSertifikat = () => {
       nama: "Nur Afra Fadhillah",
       jenissertifikat: "Akademik",
       penyelenggaralomba: "POPDA JAWA BARAT 2024",
-      jenislomba: "Sejarah",
+      bidanglomba: "Sejarah",
       mulailomba: "01-01-2023",
       selesailomba: "31-12-2023",
       tingkatlomba: "Nasional",
@@ -127,7 +127,7 @@ const TabelSertifikat = () => {
                     placeholder="Angkatan"
                     className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
-                      setSearch({ ...search, jenislomba: e.target.value })
+                      setSearch({ ...search, bidanglomba: e.target.value })
                     }
                   />
                 </div>
@@ -203,7 +203,7 @@ const TabelSertifikat = () => {
                 <td className="px-3  py-2">{idx + 1}</td>
                 <td className="px-3  py-2">{item.nama}</td>
                 <td className="px-3  py-2">{item.jenissertifikat}</td>
-                <td className="px-3  py-2">{item.jenislomba}</td>
+                <td className="px-3  py-2">{item.bidanglomba}</td>
                 <td className="px-3  py-2">{item.penyelenggaralomba}</td>
                 <td className="px-3  py-2">{item.mulailomba}</td>
                 <td className="px-3  py-2">{item.selesailomba}</td>

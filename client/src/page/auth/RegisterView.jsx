@@ -1,5 +1,5 @@
 import React from "react";
-import FormAuth from "../../components/FormAuth";
+import FormRegister from "../../components/FormRegister";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
@@ -7,7 +7,7 @@ const RegisterView = () => {
   return (
     <main>
       <Header />
-      <FormAuth isRegister={true} />
+      <FormRegister />
       <Footer />
     </main>
   );

@@ -82,44 +82,6 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-        {/* Nama */}
-        <div>
-          <label className="block text-sm font-medium mb-5">Nama</label>
-          <input
-            type="text"
-            name="nama"
-            value={formData.nama}
-            onChange={handleChange}
-            placeholder="Anisa Rahmah Kusuma"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        {/* Kelas */}
-        <div>
-          <label className="block text-sm font-medium mb-5">Kelas</label>
-          <input
-            type="text"
-            name="kelas"
-            value={formData.kelas}
-            onChange={handleChange}
-            placeholder="12 IPA 5"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        {/* No. Telp */}
-        <div>
-          <label className="block text-sm font-medium mb-5">No. Telp</label>
-          <input
-            type="text"
-            name="telp"
-            value={formData.telp}
-            onChange={handleChange}
-            placeholder="08123456789"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
 
         {/* Tanggal */}
         <div>
