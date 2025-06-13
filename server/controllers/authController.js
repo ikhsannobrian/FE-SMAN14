@@ -5,18 +5,8 @@ import Siswa from "../models/Siswa.js";
 import Admin from "../models/Admin.js";
 import { config } from "../config.js";
 
-export const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
-  try {
-    const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashed, role });
-    await user.save();
-    res.status(201).json({ message: "User registered" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
+// Register Siswa
 export const registerSiswa = async (req, res) => {
   const { name, email, password, kelas, angkatan, alamat, noTelp } = req.body;
   try {
@@ -33,6 +23,7 @@ export const registerSiswa = async (req, res) => {
   }
 };
 
+// Register Admin
 export const registerAdmin = async (req, res) => {
   const { name, email, password } = req.body;
   try {

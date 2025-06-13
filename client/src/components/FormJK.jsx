@@ -8,9 +8,6 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
   const isUpdate = location.pathname.includes("/admin");
 
   const [formData, setFormData] = useState({
-    nama: "",
-    kelas: "",
-    telp: "",
     tanggal: "",
     jam: "",
     guru: "",
