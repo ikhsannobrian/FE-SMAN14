@@ -5,11 +5,15 @@ const janjiKonselingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Siswa",
     required: true,
-    unique: true,
   },
   tanggalJanji: {
     type: String,
     required: [true, "Tanggal janji harus diisi"],
+  },
+  status: {
+    type: String,
+    enum: ["Disetujui", "Tidak Disetujui", "Menunggu"],
+    default: "Menunggu",
   },
   waktuJanji: {
     type: String,

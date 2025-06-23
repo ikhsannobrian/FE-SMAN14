@@ -1,40 +1,39 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import FormJK from "../components/FormJK";
+import { updateJanjiKonseling } from "../../service/janjianKonselingService";
+import { api } from "../../service/api";
 
 const FormUpdateJK = () => {
   const { id } = useParams();
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    // Ambil data berdasarkan ID dari backend
-    const dummy = {
-      nama: "Anisa Rahmah Kusuma",
-      kelas: "12 IPA 5",
-      telp: "08123456789",
-      tanggal: "2025-05-20",
-      jam: "10:00",
-      guru: "Dini-Nursyahida",
-      pesan: "Saya ingin konseling mengenai tekanan belajar.",
+    const fetchDataById = async () => {
+      try {
+        const res = await api.get(`/api/janjiKonseling/${id}`);
+        setData(res.data);
+      } catch (err) {
+        console.error("Gagal mengambil data Janjian Konseling:", err);
+      }
     };
-    setData(dummy);
+    fetchDataById();
   }, [id]);
 
   const handleUpdate = async (updatedData) => {
     try {
-      console.log("Data Janjian Konseling diperbarui:", updatedData);
-      // Simulasikan API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Return true untuk menandakan sukses
-      return true;
+      await updateJanjiKonseling(id, updatedData);
+      return Promise.resolve(); // penting agar alert bisa muncul di FormSertifikat
     } catch (error) {
-      console.error("Gagal memperbarui data:", error);
-      return false;
+      return Promise.reject(error);
     }
   };
 
-  return <FormJK initialData={data} onSubmit={handleUpdate} />;
+  return data ? (
+    <FormJK initialData={data} onSubmit={handleUpdate} />
+  ) : (
+    <div className="text-center py-10">Loading data Janji Konseling...</div>
+  );
 };
 
 export default FormUpdateJK;

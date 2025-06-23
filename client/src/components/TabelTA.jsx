@@ -1,70 +1,76 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
 } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
+import { getAllTracerAlumni } from "../../service/tracerAlumni";
+import { deleteTracerAlumni } from "../../service/tracerAlumni";
 
 const TabelTA = () => {
+  const [data, setData] = useState([]);
   const [search, setSearch] = useState({
-    nama: "",
+    name: "",
     angkatan: "",
-    tahunlulus: "",
+    tahunLulus: "",
     kategori: "",
     instansi: "",
     programstudi: "",
   });
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const data = [
-    {
-      id: 1,
-      nama: "Fauzan Arbhi",
-      angkatan: "15",
-      tahunlulus: "2021",
-      kategori: "Sekolah Kedinasan",
-      instansi: "UPN VETERAN JAKARTA",
-      programstudi: "Sistem Informasi",
-    },
-    {
-      id: 2,
-      nama: "Fanisa Rizki",
-      angkatan: "14",
-      tahunlulus: "2021",
-      kategori: "Perguruan Tinggi Swasta",
-      instansi: "UPN VETERAN JAKARTA",
-      programstudi: "Teknik Mesin",
-      image: "",
-    },
-    {
-      id: 3,
-      nama: "Fauzan Arbhi",
-      angkatan: "16",
-      tahunlulus: "2022",
-      kategori: "Perguruan Tinggi Negeri",
-      instansi: "Universitas Pembangunan Nasional Veteran Jawa Timur",
-      programstudi: "Teknik Mesin",
-      image: "",
-    },
-    {
-      id: 4,
-      nama: "Fanisa Rizki",
-      angkatan: "14",
-      tahunlulus: "2023",
-      kategori: "Perguruan Tinggi Negeri",
-      instansi: "UPN VETERAN JAKARTA",
-      programstudi: "Sistem Informasi",
-      image: "",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const hasil = await getAllTracerAlumni();
+        setData(hasil);
+      } catch (err) {
+        console.error("Gagal ambil data tracer alumni:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filtered = data.filter((item) =>
-    Object.entries(search).every(([key, val]) =>
-      item[key]?.toLowerCase().includes(val.toLowerCase())
-    )
+    Object.entries(search).every(([key, val]) => {
+      if (!val) return true;
+
+      if (key === "name")
+        return item.siswa?.name?.toLowerCase().includes(val.toLowerCase());
+      if (key === "angkatan")
+        return item.siswa?.angkatan?.toString().includes(val);
+      if (key === "programstudi")
+        return item.programStudi?.toLowerCase().includes(val.toLowerCase());
+      if (key === "instansi")
+        return item.namaInstansi?.toLowerCase().includes(val.toLowerCase());
+      if (key === "kategori") return item.kategori === val;
+      if (key === "tahunLulus")
+        return item.tahunLulus?.toString().includes(val);
+
+      return true;
+    })
   );
+  const toTitleCase = (str) =>
+    str
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Yakin ingin menghapus data ini?");
+    if (!confirm) return;
+
+    try {
+      await deleteTracerAlumni(id);
+      // Refresh data setelah delete
+      setData((prevData) => prevData.filter((item) => item._id !== id));
+    } catch (error) {
+      console.error("Gagal menghapus:", error);
+      alert("Terjadi kesalahan saat menghapus data.");
+    }
+  };
 
   const displayedData =
     rowsPerPage === "all" ? filtered : filtered.slice(0, Number(rowsPerPage));
@@ -102,9 +108,9 @@ const TabelTA = () => {
                   <input
                     type="text"
                     placeholder="Masukan Nama"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded"
                     onChange={(e) =>
-                      setSearch({ ...search, nama: e.target.value })
+                      setSearch({ ...search, name: e.target.value })
                     }
                   />
                 </div>
@@ -115,7 +121,7 @@ const TabelTA = () => {
                   <input
                     type="text"
                     placeholder="Angkatan"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded"
                     onChange={(e) =>
                       setSearch({ ...search, angkatan: e.target.value })
                     }
@@ -128,9 +134,9 @@ const TabelTA = () => {
                   <input
                     type="text"
                     placeholder="Tahun Lulus"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded"
                     onChange={(e) =>
-                      setSearch({ ...search, tahunlulus: e.target.value })
+                      setSearch({ ...search, tahunLulus: e.target.value })
                     }
                   />
                 </div>
@@ -139,31 +145,34 @@ const TabelTA = () => {
                 Kategori
                 <div>
                   <select
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black"
+                    value={search.kategori}
                     onChange={(e) =>
                       setSearch({ ...search, kategori: e.target.value })
                     }
                   >
-                    <option value="">Pilih</option>
-                    <option value="Sekolah-Kedinasan">Sekolah Kedinasan</option>
-                    <option value="Perguruan Tinggi Swasta">
-                      Perguruan Tinggi Swasta
-                    </option>
-                    <option value="Perguruan Tinggi Negeri">
+                    <option value="">Pilih kategori</option>
+                    <option value="perguruan tinggi negeri">
                       Perguruan Tinggi Negeri
                     </option>
-                    <option value="Pegawai-Negeri">Pegawai Negeri</option>
-                    <option value="KaryawanSwasta">Karyawan Swasta</option>
+                    <option value="perguruan tinggi swasta">
+                      Perguruan Tinggi Swasta
+                    </option>
+                    <option value="wirausaha">Wirausaha</option>
+                    <option value="sekolah kedinasan">Sekolah Kedinasan</option>
+                    <option value="karyawan swasta">Karyawan Swasta</option>
+                    <option value="pegawai negeri">Pegawai Negeri</option>
                   </select>
                 </div>
               </th>
+
               <th className="px-3 py-2 font-semibold">
                 Instansi
                 <div>
                   <input
                     type="text"
                     placeholder="Instansi"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded"
                     onChange={(e) =>
                       setSearch({ ...search, instansi: e.target.value })
                     }
@@ -176,7 +185,7 @@ const TabelTA = () => {
                   <input
                     type="text"
                     placeholder="Program Studi"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded"
                     onChange={(e) =>
                       setSearch({ ...search, programstudi: e.target.value })
                     }
@@ -189,34 +198,37 @@ const TabelTA = () => {
           <tbody>
             {displayedData.map((item, idx) => (
               <tr
-                key={`${item.id}-${idx}`}
+                key={item._id}
                 className="border-b hover:bg-gray-50 transition-colors"
               >
-                <td className="px-3  py-2">{idx + 1}</td>
-                <td className="px-3  py-2">{item.nama}</td>
-                <td className="px-3  py-2">{item.angkatan}</td>
-                <td className="px-3  py-2">{item.tahunlulus}</td>
-                <td className="px-3  py-2">{item.kategori}</td>
-                <td className="px-3  py-2">{item.instansi}</td>
-                <td className="px-3  py-2">{item.programstudi}</td>
-                <td className="px-3  py-2">
+                <td className="px-3 py-2">{idx + 1}</td>
+                <td className="px-3 py-2">{item.siswa?.name}</td>
+                <td className="px-3 py-2">{item.siswa?.angkatan}</td>
+                <td className="px-3 py-2">{item.tahunLulus}</td>
+                <td className="px-3 py-2">{toTitleCase(item.kategori)}</td>
+                <td className="px-3 py-2">{item.namaInstansi}</td>
+                <td className="px-3 py-2">{item.programStudi}</td>
+                <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <EyeIcon
                       className="h-5 w-5 text-blue-600 cursor-pointer"
                       title="Lihat Gambar"
-                      onClick={() => window.open(item.image || "", "_blank")}
+                      onClick={() => window.open(item.uploadBukti, "_blank")}
                     />
-                    <Link to={`/admin/updateta/${item.id}`}>
+                    <Link to={`/admin/updateta/${item._id}`}>
                       <PencilSquareIcon className="h-5 w-5 text-green-600 hover:text-blue-800 cursor-pointer" />
                     </Link>
-                    <TrashIcon className="h-5 w-5 text-red-600 cursor-pointer" />
+                    <TrashIcon
+                      className="h-5 w-5 text-red-600 cursor-pointer"
+                      onClick={() => handleDelete(item._id)}
+                    />
                   </div>
                 </td>
               </tr>
             ))}
             {displayedData.length === 0 && (
               <tr>
-                <td colSpan={11} className="text-center py-4 text-gray-500">
+                <td colSpan={8} className="text-center py-4 text-gray-500">
                   Tidak ada data ditemukan.
                 </td>
               </tr>

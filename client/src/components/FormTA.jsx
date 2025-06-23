@@ -1,27 +1,56 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import axios from "axios"; // ✅ pastikan axios diimport
 import Alert from "./Alert";
+import { createTracerAlumni } from "../../service/tracerAlumni";
 
-const FormTA = ({ initialData = {}, onSubmit }) => {
+const FormTA = ({ initialData = {}, onSubmit = createTracerAlumni }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isUpdate = location.pathname.includes("/admin");
 
   const [formData, setFormData] = useState({
-    nama: "",
-    angkatan: "",
-    tahunlulus: "",
+    tahunLulus: "",
     kategori: "",
-    instansi: "",
-    programstudi: "",
-    bukti: null,
+    namaInstansi: "",
+    programStudi: "",
+    uploadBukti: null,
+    siswa: "", // tambahkan field siswa default
   });
 
+  const [siswa, setSiswa] = useState({});
   const [alertVisible, setAlertVisible] = useState(false);
   const [error, setError] = useState(null);
 
+  // ✅ Ambil user dari localStorage sekali saja
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  // ✅ Hanya ambil data siswa satu kali saat mount jika bukan update dan user SISWA
   useEffect(() => {
-    if (initialData) {
+    const fetchSiswa = async () => {
+      console.log("User dari localStorage:", user);
+      try {
+        if (!isUpdate && user?.role === "SISWA") {
+          const res = await axios.get(
+            `http://localhost:5000/api/auth/siswa/${user.siswaId}`
+          );
+          setSiswa(res.data);
+          setFormData((prev) => ({
+            ...prev,
+            siswa: res.data._id, // ✅ tambahkan id siswa langsung
+          }));
+        }
+      } catch (err) {
+        console.error("Gagal ambil siswa:", err);
+      }
+    };
+
+    fetchSiswa();
+  }, []); // ✅ hanya jalan sekali saat mount
+
+  // ✅ Set data awal hanya sekali kalau `initialData` tersedia (mode update)
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
       setFormData((prev) => ({
         ...prev,
         ...initialData,
@@ -31,8 +60,8 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "bukti") {
-      setFormData({ ...formData, bukti: files[0] });
+    if (name === "uploadBukti") {
+      setFormData({ ...formData, uploadBukti: files[0] });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -43,13 +72,21 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
     setError(null);
 
     try {
-      if (onSubmit) {
-        await onSubmit(formData);
-      }
-      setAlertVisible(true); // Tampilkan alert setelah submit berhasil
+      const finalData = {
+        ...formData,
+        name: siswa.name,
+        kelas: siswa.kelas,
+        angkatan: siswa.angkatan,
+      };
+
+      await onSubmit(finalData);
+      setAlertVisible(true);
     } catch (err) {
-      setError("Gagal menyimpan data. Silakan coba lagi.");
-      console.error("Submit error:", err);
+      const msg =
+        err.response?.data?.message ||
+        "Gagal menyimpan data. Silakan coba lagi.";
+      setError(msg);
+      console.error("Submit error:", msg);
     }
   };
 
@@ -88,13 +125,13 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-
         <div>
           <label className="block text-sm font-medium mb-5">Tahun Lulus</label>
           <input
             type="text"
-            name="tahunlulus"
-            value={formData.tahunlulus}
+            name="tahunLulus"
+            required
+            value={formData.tahunLulus}
             onChange={handleChange}
             placeholder="2021"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -105,6 +142,7 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
           <label className="block text-sm font-medium mb-5">Kategori</label>
           <select
             name="kategori"
+            required
             value={formData.kategori}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -112,16 +150,16 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
             <option value="" disabled>
               Pilih kategori
             </option>
-            <option value="Perguruan-Tinggi-Negri">
+            <option value="perguruan tinggi negeri">
               Perguruan Tinggi Negeri
             </option>
-            <option value="Perguruan-Tinggi-Swasta">
+            <option value="perguruan tinggi swasta">
               Perguruan Tinggi Swasta
             </option>
-            <option value="Sekolah-Kedinasan">Sekolah Kedinasan</option>
-            <option value="Wirausaha">Wirausaha</option>
-            <option value="Karyawan-Swasta">Karyawan Swasta</option>
-            <option value="Pegawai-Negeri">Pegawai Negeri</option>
+            <option value="wirausaha">Wirausaha</option>
+            <option value="sekolah kedinasan">Sekolah Kedinasan</option>
+            <option value="karyawan swasta">Karyawan Swasta</option>
+            <option value="pegawai negeri">Pegawai Negeri</option>
           </select>
         </div>
 
@@ -129,8 +167,9 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
           <label className="block text-sm font-medium mb-5">Instansi</label>
           <input
             type="text"
-            name="instansi"
-            value={formData.instansi}
+            name="namaInstansi"
+            required
+            value={formData.namaInstansi}
             onChange={handleChange}
             placeholder="Universitas Indonesia"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -143,8 +182,9 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
           </label>
           <input
             type="text"
-            name="programstudi"
-            value={formData.programstudi}
+            name="programStudi"
+            required
+            value={formData.programStudi}
             onChange={handleChange}
             placeholder="Teknik Mesin"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -156,7 +196,7 @@ const FormTA = ({ initialData = {}, onSubmit }) => {
           <input
             type="file"
             accept="image/*"
-            name="bukti"
+            name="uploadBukti"
             onChange={handleChange}
             className="block w-full text-sm text-gray-500
               file:mr-4 file:py-2 file:px-4

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "./Alert";
+import axios from "axios";
 
 const FormNA = ({ initialData = {}, onSubmit }) => {
   const location = useLocation();
@@ -8,19 +9,44 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
   const isUpdate = location.pathname.includes("/admin");
 
   const [formData, setFormData] = useState({
-    nama: "",
-    angkatan: "",
-    kelas: "",
+    siswa: "",
     semester1: "",
     semester2: "",
     semester3: "",
     semester4: "",
     semester5: "",
-    average: "",
   });
 
   const [alertVisible, setAlertVisible] = useState(false);
+  const [alertData, setAlertData] = useState({
+    type: "success",
+    title: "",
+    message: "",
+  });
 
+  // Ambil user dari localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?._id;
+
+  // Fetch siswaId berdasarkan user login
+  useEffect(() => {
+    const fetchSiswa = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/api/auth/siswa/${userId}`
+        );
+        setFormData((prev) => ({ ...prev, siswa: res.data._id }));
+      } catch (error) {
+        console.error("Gagal ambil siswa:", error);
+      }
+    };
+
+    if (!isUpdate && user?.role === "SISWA") {
+      fetchSiswa();
+    }
+  }, [userId, isUpdate]);
+
+  // Isi nilai lama jika update
   useEffect(() => {
     if (initialData) {
       setFormData((prev) => ({
@@ -28,26 +54,61 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
         ...initialData,
       }));
     }
-  }, [initialData]);
+  }, [JSON.stringify(initialData)]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (onSubmit) {
-      onSubmit(formData);
-    }
+    const dataSiapKirim = {
+      ...formData,
+      semester1: Number(formData.semester1),
+      semester2: Number(formData.semester2),
+      semester3: Number(formData.semester3),
+      semester4: Number(formData.semester4),
+      semester5: Number(formData.semester5),
+    };
 
-    setAlertVisible(true); // Tampilkan alert setelah submit
+    try {
+      if (onSubmit) {
+        await onSubmit(dataSiapKirim);
+
+        // ✅ Tampilkan alert sukses
+        setAlertData({
+          type: "success",
+          title: isUpdate ? "Data Diperbarui" : "Berhasil",
+          message: isUpdate
+            ? "Data Nilai Akademik berhasil diperbarui."
+            : "Data Nilai Akademik berhasil dikirim.",
+        });
+        setAlertVisible(true);
+      }
+    } catch (error) {
+      const errorMsg = error?.response?.data?.message || "";
+
+      // ❌ Tampilkan alert gagal
+      setAlertData({
+        type: "error",
+        title: "Gagal",
+        message:
+          errorMsg.includes("duplicate") ||
+          errorMsg.toLowerCase().includes("sudah pernah")
+            ? "Anda sudah pernah mengumpulkan nilai."
+            : "Terjadi kesalahan saat mengirim data.",
+      });
+      setAlertVisible(true);
+    }
   };
 
   const handleAlertClose = () => {
     setAlertVisible(false);
-    navigate(isUpdate ? "/admin/tabelna" : "/form-na");
+    if (alertData.type === "success") {
+      navigate(isUpdate ? "/admin/tabelna" : "/form-na");
+    }
   };
 
   return (
@@ -60,13 +121,9 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
 
       {alertVisible && (
         <Alert
-          type="success"
-          title={isUpdate ? "Data Diperbarui" : "Berhasil"}
-          message={
-            isUpdate
-              ? "Data Nilai Akademik berhasil diperbarui."
-              : "Data Nilai Akademik berhasil dikirim."
-          }
+          type={alertData.type}
+          title={alertData.title}
+          message={alertData.message}
           buttonLabel="OK"
           onClose={handleAlertClose}
         />
@@ -76,65 +133,24 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-        <div>
-          <label className="block text-sm font-medium mb-5">Semester 1</label>
-          <input
-            type="text"
-            name="semester1"
-            value={formData.semester1}
-            onChange={handleChange}
-            placeholder="85.6"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-5">Semester 2</label>
-          <input
-            type="text"
-            name="semester2"
-            value={formData.semester2}
-            onChange={handleChange}
-            placeholder="88.6"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-5">Semester 3</label>
-          <input
-            type="text"
-            name="semester3"
-            value={formData.semester3}
-            onChange={handleChange}
-            placeholder="89.6"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-5">Semester 4</label>
-          <input
-            type="text"
-            name="semester4"
-            value={formData.semester4}
-            onChange={handleChange}
-            placeholder="87.6"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-5">Semester 5</label>
-          <input
-            type="text"
-            name="semester5"
-            value={formData.semester5}
-            onChange={handleChange}
-            placeholder="90.6"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-        </div>
+        {["semester1", "semester2", "semester3", "semester4", "semester5"].map(
+          (field, idx) => (
+            <div key={field}>
+              <label className="block text-sm font-medium mb-5">
+                Semester {idx + 1}
+              </label>
+              <input
+                type="text"
+                name={field}
+                value={formData[field]}
+                onChange={handleChange}
+                placeholder={`Nilai semester ${idx + 1}`}
+                required
+                className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          )
+        )}
 
         <div className="text-right">
           <Link

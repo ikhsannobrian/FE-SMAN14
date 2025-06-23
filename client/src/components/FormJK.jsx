@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "./Alert";
+import { createJanjiKonseling } from "../../service/janjianKonselingService";
+import axios from "axios";
 
 const FormJK = ({ initialData = {}, onSubmit }) => {
   const location = useLocation();
@@ -8,19 +10,64 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
   const isUpdate = location.pathname.includes("/admin");
 
   const [formData, setFormData] = useState({
-    tanggal: "",
-    jam: "",
-    guru: "",
-    pesan: "",
+    tanggalJanji: "",
+    waktuJanji: "",
+    guruBK: "",
+    keperluan: "",
+    status: "", // ✅ Tambahkan status ke formData
   });
 
   const [alertVisible, setAlertVisible] = useState(false);
+  const [siswaId, setSiswaId] = useState("");
 
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      setFormData((prev) => ({ ...prev, ...initialData }));
+    const fetchSiswaId = async () => {
+      try {
+        if (!isUpdate) {
+          const user = JSON.parse(localStorage.getItem("user"));
+          const res = await axios.get(
+            `http://localhost:5000/api/auth/siswa/${user.siswaId}`
+          );
+          setSiswaId(res.data._id);
+        } else {
+          const siswa = initialData?.siswa?._id || initialData?.siswa || null;
+          if (siswa) setSiswaId(siswa);
+        }
+      } catch (err) {
+        console.error("Gagal mengambil siswaId:", err);
+      }
+    };
+
+    fetchSiswaId();
+  }, [initialData, isUpdate]);
+
+  useEffect(() => {
+    if (isUpdate && initialData) {
+      setFormData({
+        tanggalJanji: initialData.tanggalJanji || "",
+        waktuJanji: initialData.waktuJanji || "",
+        guruBK: initialData.guruBK || "",
+        keperluan: initialData.keperluan || "",
+        status: initialData.status || "", // ✅ Inisialisasi status dari data awal
+      });
     }
-  }, [initialData]);
+  }, [initialData, isUpdate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        siswa: siswaId,
+        ...formData,
+      };
+
+      await onSubmit(payload);
+      setAlertVisible(true);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,25 +77,8 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      if (onSubmit) {
-        // Pastikan onSubmit tidak melakukan redirect/navigate sendiri
-        await onSubmit(formData);
-      }
-
-      // Tampilkan alert setelah submit berhasil
-      setAlertVisible(true);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  };
-
   const handleAlertClose = () => {
     setAlertVisible(false);
-    // Navigasi hanya setelah user menutup alert
     navigate(isUpdate ? "/admin/tabeljk" : "/form-jk");
   };
 
@@ -71,7 +101,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
           }
           buttonLabel="OK"
           onClose={handleAlertClose}
-          duration={3000} // Alert akan otomatis tutup setelah 3 detik
+          duration={3000}
         />
       )}
 
@@ -79,14 +109,13 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-
         {/* Tanggal */}
         <div>
           <label className="block text-sm font-medium mb-5">Tanggal</label>
           <input
             type="date"
-            name="tanggal"
-            value={formData.tanggal}
+            name="tanggalJanji"
+            value={formData.tanggalJanji}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
@@ -96,9 +125,9 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
         <div>
           <label className="block text-sm font-medium mb-2">Jam</label>
           <input
-            type="time"
-            name="jam"
-            value={formData.jam}
+            type="text"
+            name="waktuJanji"
+            value={formData.waktuJanji}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
@@ -108,16 +137,16 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
         <div>
           <label className="block text-sm font-medium mb-5">Guru BK</label>
           <select
-            name="guru"
-            value={formData.guru}
+            name="guruBK"
+            value={formData.guruBK}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           >
             <option value="" disabled>
               Pilih Guru BK
             </option>
-            <option value="Dini-Nursyahida">Dini Nursyahida</option>
-            <option value="Lina-Erliana">Lina Erliana</option>
+            <option value="Dini Nursyahida">Dini Nursyahida</option>
+            <option value="Lina Erliana">Lina Erliana</option>
             <option value="Tari">Tari</option>
           </select>
         </div>
@@ -128,14 +157,31 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
             Pesan (Keluhan)
           </label>
           <textarea
-            name="pesan"
+            name="keperluan"
             rows="3"
-            value={formData.pesan}
+            value={formData.keperluan}
             onChange={handleChange}
             placeholder="Tulis pesan atau keluhanmu di sini"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           ></textarea>
         </div>
+
+        {/* ✅ Status hanya ditampilkan saat update */}
+        {isUpdate && (
+          <div>
+            <label className="block text-sm font-medium mb-5">Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Pilih Status</option>
+              <option value="Disetujui">Disetujui</option>
+              <option value="Tidak Disetujui">Tidak Disetujui</option>
+            </select>
+          </div>
+        )}
 
         {/* Navigasi dan Submit */}
         <div className="text-right">

@@ -10,23 +10,23 @@ const siswaSchema = new mongoose.Schema(
     },
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
     },
     kelas: {
       type: String,
-      required: true,
+      required: [true, "kelas is required"],
     },
     angkatan: {
       type: String,
-      required: true,
+      required: [true, "Angkatan is required"],
     },
     alamat: {
       type: String,
-      required: true,
+      required: [true, "Alamat is required"],
     },
     noTelp: {
       type: String,
-      required: true,
+      required: [true, "No telp is required"],
     },
   },
   {

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "./Alert";
+import { createSertifikat } from "../../service/sertifikat";
+import axios from "axios";
 
 const FormSertifikat = ({ initialData = {}, onSubmit }) => {
   const location = useLocation();
@@ -8,32 +10,58 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
   const isUpdate = location.pathname.includes("/admin");
 
   const [formData, setFormData] = useState({
-    nama: "",
     jenissertifikat: "",
-    jenislomba: "",
+    bidanglomba: "",
     penyelenggaralomba: "",
     mulailomba: "",
     selesailomba: "",
     tingkatlomba: "",
-    bukti: null,
+    uploadSertifikat: null,
   });
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [error, setError] = useState(null);
+  const [siswaId, setSiswaId] = useState("");
 
   useEffect(() => {
-    if (initialData) {
+    const fetchSiswaId = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const res = await axios.get(
+          `http://localhost:5000/api/auth/siswa/${user.siswaId}`
+        );
+        setSiswaId(res.data._id);
+      } catch (err) {
+        console.error("Gagal mengambil siswaId:", err);
+      }
+    };
+
+    fetchSiswaId();
+  }, []);
+
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
       setFormData((prev) => ({
         ...prev,
-        ...initialData,
+        jenissertifikat: initialData.jenissertifikat || "",
+        bidanglomba: initialData.bidanglomba || "",
+        penyelenggaralomba: initialData.penyelenggaralomba || "",
+        mulailomba: initialData.mulailomba
+          ? new Date(initialData.mulailomba).toISOString().split("T")[0]
+          : "",
+        selesailomba: initialData.selesailomba
+          ? new Date(initialData.selesailomba).toISOString().split("T")[0]
+          : "",
+        tingkatlomba: initialData.tingkatlomba || "",
+        uploadSertifikat: null,
       }));
     }
   }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "bukti") {
-      setFormData((prev) => ({ ...prev, bukti: files[0] }));
+    if (name === "uploadSertifikat") {
+      setFormData((prev) => ({ ...prev, uploadSertifikat: files[0] }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -43,14 +71,47 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
     e.preventDefault();
     setError(null);
 
+    if (!siswaId && !isUpdate) {
+      setError("Siswa ID belum tersedia.");
+      return;
+    }
+
     try {
-      if (onSubmit) {
-        await onSubmit(formData);
+      const finalFormData = new FormData();
+      if (!isUpdate) {
+        finalFormData.append("siswa", siswaId);
       }
-      setAlertVisible(true); // Tampilkan alert setelah submit berhasil
+      finalFormData.append("jenissertifikat", formData.jenissertifikat);
+      finalFormData.append("bidanglomba", formData.bidanglomba);
+      finalFormData.append("penyelenggaralomba", formData.penyelenggaralomba);
+      finalFormData.append("mulailomba", formData.mulailomba);
+      finalFormData.append("selesailomba", formData.selesailomba);
+      finalFormData.append("tingkatlomba", formData.tingkatlomba);
+
+      if (formData.uploadSertifikat) {
+        finalFormData.append("uploadSertifikat", formData.uploadSertifikat);
+      }
+
+      if (onSubmit) {
+        await onSubmit(finalFormData);
+      } else {
+        await createSertifikat(finalFormData);
+      }
+
+      setAlertVisible(true);
+
+      setFormData({
+        jenissertifikat: "",
+        bidanglomba: "",
+        penyelenggaralomba: "",
+        mulailomba: "",
+        selesailomba: "",
+        tingkatlomba: "",
+        uploadSertifikat: null,
+      });
     } catch (err) {
-      setError("Gagal menyimpan data. Silakan coba lagi.");
       console.error("Submit error:", err);
+      setError("Gagal menyimpan data. Silakan coba lagi.");
     }
   };
 
@@ -69,7 +130,6 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>
       )}
-
       {alertVisible && (
         <Alert
           type="success"
@@ -83,17 +143,18 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           onClose={handleAlertClose}
         />
       )}
+
       <form
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-        {/* Jenis Sertifikat */}
         <div>
           <label className="block text-sm font-medium mb-5">
             Jenis Sertifikat
           </label>
           <select
             name="jenissertifikat"
+            required
             value={formData.jenissertifikat}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -104,12 +165,12 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           </select>
         </div>
 
-        {/* Jenis Olahraga / Akademik */}
         <div>
           <label className="block text-sm font-medium mb-5">Bidang Lomba</label>
           <input
             type="text"
-            name="jenislomba"
+            name="bidanglomba"
+            required
             value={formData.bidanglomba}
             onChange={handleChange}
             placeholder="Futsal / Matematika"
@@ -117,7 +178,6 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           />
         </div>
 
-        {/* Penyelenggara */}
         <div>
           <label className="block text-sm font-medium mb-5">
             Penyelenggara Perlombaan
@@ -125,6 +185,7 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           <input
             type="text"
             name="penyelenggaralomba"
+            required
             value={formData.penyelenggaralomba}
             onChange={handleChange}
             placeholder="VISCO 2022 by AL-AZHAR SUMMARECON"
@@ -132,7 +193,6 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           />
         </div>
 
-        {/* Mulai */}
         <div>
           <label className="block text-sm font-medium mb-5">
             Mulai Perlombaan
@@ -140,13 +200,13 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           <input
             type="date"
             name="mulailomba"
+            required
             value={formData.mulailomba}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        {/* Selesai */}
         <div>
           <label className="block text-sm font-medium mb-5">
             Selesai Perlombaan
@@ -154,19 +214,20 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           <input
             type="date"
             name="selesailomba"
+            required
             value={formData.selesailomba}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        {/* Tingkat Lomba */}
         <div>
           <label className="block text-sm font-medium mb-5">
             Tingkat Lomba
           </label>
           <select
             name="tingkatlomba"
+            required
             value={formData.tingkatlomba}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -179,7 +240,6 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           </select>
         </div>
 
-        {/* Upload Sertifikat */}
         <div>
           <label className="block text-sm font-medium mb-5">
             Upload Sertifikat
@@ -187,7 +247,7 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           <input
             type="file"
             accept="image/*"
-            name="bukti"
+            name="uploadSertifikat"
             onChange={handleChange}
             className="block w-full text-sm text-gray-500
               file:mr-4 file:py-2 file:px-4
@@ -198,10 +258,9 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           />
         </div>
 
-        {/* Link kembali */}
         <div className="text-right">
           <Link
-            to={isUpdate ? "/tabel-sertifikat" : "/layanan-konseling"}
+            to={isUpdate ? "/admin/tabelsertifikat" : "/layanan-konseling"}
             className="inline-block text-black-500 hover:text-blue-700 mb-2"
           >
             {isUpdate
@@ -210,7 +269,6 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
           </Link>
         </div>
 
-        {/* Submit */}
         <div className="text-right">
           <button
             type="submit"

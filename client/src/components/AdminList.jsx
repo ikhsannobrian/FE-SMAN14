@@ -1,58 +1,47 @@
 import { useState, useEffect } from "react";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
-import { getAllSiswa, deleteSiswa } from "../../service/authService";
+import { getAllAdmin, deleteAdmin } from "../../service/authService";
 
-const UserList = () => {
-  const [data, setData] = useState([]);
-  const [search, setSearch] = useState({
-    name: "",
-    email: "",
-    kelas: "",
-    angkatan: "",
-    noTelp: "",
-  });
-
+const AdminList = () => {
+  const [adminList, setAdminList] = useState([]);
+  const [search, setSearch] = useState({ name: "", email: "" });
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchData();
+    fetchAdmin();
   }, []);
 
-  const fetchData = async () => {
+  const fetchAdmin = async () => {
     try {
-      const res = await getAllSiswa();
-      const siswaList = res.data.data.map((siswa) => ({
-        id: siswa._id,
-        name: siswa.name,
-        email: siswa.user?.email || "-",
-        kelas: siswa.kelas,
-        angkatan: siswa.angkatan,
-        noTelp: siswa.noTelp,
-      }));
-      setData(siswaList);
+      const response = await getAllAdmin();
+      console.log("Respons Admin:", response.data);
+      setAdminList(response.data);
     } catch (error) {
-      console.error("Gagal mengambil data siswa:", error);
+      console.error("Gagal mengambil data admin:", error);
     }
   };
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm("Yakin ingin menghapus data siswa ini?");
-    if (!confirm) return;
+    const confirmDelete = window.confirm("Yakin ingin menghapus data ini?");
+    if (!confirmDelete) return;
 
     try {
-      await deleteSiswa(id);
-      setData((prevData) => prevData.filter((item) => item.id !== id));
+      await deleteAdmin(id);
+      setAdminList((prevData) => prevData.filter((admin) => admin._id !== id));
     } catch (error) {
       console.error("Gagal menghapus:", error);
       alert("Terjadi kesalahan saat menghapus data.");
     }
   };
 
-  const filtered = data.filter((item) =>
-    Object.entries(search).every(([key, val]) =>
-      item[key]?.toLowerCase().includes(val.toLowerCase())
-    )
+  const filtered = adminList.filter((admin) =>
+    Object.entries(search).every(([key, val]) => {
+      if (key === "email") {
+        return admin.user?.email?.toLowerCase().includes(val.toLowerCase());
+      }
+      return admin[key]?.toLowerCase().includes(val.toLowerCase());
+    })
   );
 
   const displayedData =
@@ -61,7 +50,7 @@ const UserList = () => {
   return (
     <div className="p-4 rounded-2xl shadow-lg bg-white">
       <div className="flex justify-between items-center mb-2">
-        <h1 className="text-2xl font-bold">User List</h1>
+        <h1 className="text-2xl font-bold">Daftar Admin</h1>
         <div className="flex items-center gap-2">
           <label htmlFor="rows" className="text-sm font-medium">
             Show
@@ -103,49 +92,10 @@ const UserList = () => {
                 <div>
                   <input
                     type="text"
-                    placeholder="Email"
+                    placeholder="Masukan Email"
                     className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
                       setSearch({ ...search, email: e.target.value })
-                    }
-                  />
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">
-                Kelas
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Kelas"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, kelas: e.target.value })
-                    }
-                  />
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">
-                Angkatan
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Angkatan"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, angkatan: e.target.value })
-                    }
-                  />
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">
-                Nomor Telepon
-                <div>
-                  <input
-                    type="text"
-                    placeholder="No Telp"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, noTelp: e.target.value })
                     }
                   />
                 </div>
@@ -154,25 +104,22 @@ const UserList = () => {
             </tr>
           </thead>
           <tbody>
-            {displayedData.map((item, idx) => (
+            {displayedData.map((admin, idx) => (
               <tr
-                key={`${item.id}-${idx}`}
+                key={`${admin._id}-${idx}`}
                 className="border-b hover:bg-gray-50 transition-colors"
               >
                 <td className="px-3 py-2">{idx + 1}</td>
-                <td className="px-3 py-2">{item.name}</td>
-                <td className="px-3 py-2">{item.email}</td>
-                <td className="px-3 py-2">{item.kelas}</td>
-                <td className="px-3 py-2">{item.angkatan}</td>
-                <td className="px-3 py-2">{item.noTelp}</td>
+                <td className="px-3 py-2">{admin.name}</td>
+                <td className="px-3 py-2">{admin.user?.email ?? "-"}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <Link to={`/admin/updateas/${item.id}`}>
+                    <Link to={`/admin/update/${admin._id}`}>
                       <PencilSquareIcon className="h-5 w-5 text-green-600 hover:text-blue-800 cursor-pointer" />
                     </Link>
                     <TrashIcon
                       className="h-5 w-5 text-red-600 cursor-pointer"
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleDelete(admin._id)}
                     />
                   </div>
                 </td>
@@ -180,8 +127,8 @@ const UserList = () => {
             ))}
             {displayedData.length === 0 && (
               <tr>
-                <td colSpan={11} className="text-center py-4 text-gray-500">
-                  Tidak ada data ditemukan.
+                <td colSpan="4" className="text-center py-4 text-gray-500">
+                  Tidak ada data admin.
                 </td>
               </tr>
             )}
@@ -192,4 +139,4 @@ const UserList = () => {
   );
 };
 
-export default UserList;
+export default AdminList;

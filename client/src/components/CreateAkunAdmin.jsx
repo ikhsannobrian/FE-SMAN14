@@ -1,14 +1,18 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Alert from "./Alert";
+import { registerAdmin } from "../../service/authService"; // pastikan path ini sesuai struktur project kamu
 
 const CreateAkunAdmin = () => {
   const [showAlert, setShowAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
-    nama: "",
-    username: "",
+    name: "", // diganti dari nama ke name
+    email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,18 +22,30 @@ const CreateAkunAdmin = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lakukan proses pembuatan akun di sini (misalnya API call)
-    // Setelah berhasil, tampilkan alert
-    setShowAlert(true);
+    try {
+      await registerAdmin(formData); // kirim data dengan field name
+      setShowAlert(true);
+      setErrorMessage("");
 
-    // Reset form
-    setFormData({
-      nama: "",
-      username: "",
-      password: "",
-    });
+      // reset form
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+      });
+
+      // redirect setelah 2 detik
+      setTimeout(() => {
+        navigate("/admin/createadmin"); // sesuaikan dengan route kamu
+      }, 2000);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(
+        error?.response?.data?.message || "Gagal membuat akun admin."
+      );
+    }
   };
 
   const handleCloseAlert = () => {
@@ -41,56 +57,59 @@ const CreateAkunAdmin = () => {
       {showAlert && (
         <Alert
           type="success"
-          message="Akun berhasil dibuat!"
+          message="Akun admin berhasil dibuat!"
           onClose={handleCloseAlert}
-          showCloseButton={true} // Pastikan Alert component mendukung prop ini
+          showCloseButton={true}
         />
+      )}
+
+      {errorMessage && (
+        <Alert type="error" message={errorMessage} showCloseButton={true} />
       )}
 
       <form
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-        {/* Nama */}
         <div>
-          <label className="block text-sm font-medium mb-5">Nama</label>
+          <label className="block text-sm font-medium mb-2">Nama</label>
           <input
             type="text"
-            name="nama"
-            value={formData.nama}
+            name="name" // harus "name", bukan "nama"
+            value={formData.name}
             onChange={handleChange}
-            placeholder="chanis14"
+            placeholder="Nama Admin"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
+            required
           />
         </div>
 
-        {/* Username */}
         <div>
-          <label className="block text-sm font-medium mb-5">Username</label>
+          <label className="block text-sm font-medium mb-2">Email</label>
           <input
-            type="text"
-            name="username"
-            value={formData.username}
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
-            placeholder="chanis14"
+            placeholder="admin123@gmail.com"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
+            required
           />
         </div>
 
-        {/* Password */}
         <div>
-          <label className="block text-sm font-medium mb-5">Password</label>
+          <label className="block text-sm font-medium mb-2">Password</label>
           <input
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="chaniscantik"
+            placeholder="admin123"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
+            required
           />
         </div>
 
-        {/* Submit */}
         <div className="text-right">
           <button
             type="submit"

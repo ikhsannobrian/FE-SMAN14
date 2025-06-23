@@ -5,6 +5,7 @@ import {
   updateNilaiAkademik,
   deleteNilaiAkademik,
   getAllNilaiAkademik,
+  getNilaiAkademikById,
 } from "../controllers/nilaiAkademikController.js";
 import {
   authMiddleware,
@@ -14,10 +15,16 @@ import {
 
 const router = express.Router();
 
-router.get("/:id",authMiddleware, adminMiddleware, getNilaiSiswaById);
-router.get("/",authMiddleware, adminMiddleware, getAllNilaiAkademik);
+router.get(
+  "/by-siswa/:id",
+  authMiddleware,
+  adminMiddleware,
+  getNilaiAkademikById
+);
+router.get("/:id", authMiddleware, adminMiddleware, getNilaiSiswaById);
+router.get("/", authMiddleware, adminMiddleware, getAllNilaiAkademik);
 router.post("/", authMiddleware, siswaMiddleware, createNilaiAkademik);
-router.put("/:id",authMiddleware, adminMiddleware, updateNilaiAkademik);
-router.delete("/:id",authMiddleware, adminMiddleware, deleteNilaiAkademik);
+router.put("/:id", authMiddleware, adminMiddleware, updateNilaiAkademik);
+router.delete("/:id", authMiddleware, adminMiddleware, deleteNilaiAkademik);
 
 export default router;

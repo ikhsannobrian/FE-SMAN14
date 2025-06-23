@@ -1,14 +1,38 @@
 import Logo from "../assets/logo.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { login } from "../../service/authService";
 
 const FormLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await login(email, password);
+      const { token, user } = res.data;
+
+      console.log("User login:", user);
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // redirect ke halaman dashboard atau sesuai role
+      if (user.role.toLowerCase() === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/layanan-konseling");
+      }
+    } catch (error) {
+      setErrorMsg(error.response?.data?.message || "Login gagal");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row items-center justify-center gap-8 px-4 py-2 bg-white">
-      {/* Form kiri */}
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm md:mr-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-1 text-center md:text-left">
           Sistem Informasi Manajemen
@@ -20,11 +44,7 @@ const FormLogin = () => {
           Login
         </h4>
 
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="flex flex-col gap-y-4"
-        >
-          {/* Username */}
+        <form onSubmit={handleLogin} className="flex flex-col gap-y-4">
           <div>
             <label
               htmlFor="email"
@@ -39,12 +59,11 @@ const FormLogin = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              // required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* Password */}
           <div>
             <label
               htmlFor="password"
@@ -59,10 +78,12 @@ const FormLogin = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              // required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
+
+          {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
 
           <button
             type="submit"
@@ -80,7 +101,6 @@ const FormLogin = () => {
         </form>
       </div>
 
-      {/* Logo kanan */}
       <div className="w-full max-w-sm mt-6 md:mt-0">
         <img src={Logo} alt="Logo SMAN 14" className="w-full h-auto" />
       </div>

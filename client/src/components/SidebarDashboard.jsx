@@ -58,6 +58,11 @@ const SidebarDashboard = () => {
       icon: <ClipboardList size={20} />,
       label: "User List",
     },
+    {
+      to: "/admin/adminlist",
+      icon: <ClipboardList size={20} />,
+      label: "Admin List",
+    },
   ];
 
   return (

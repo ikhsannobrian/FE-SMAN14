@@ -1,6 +1,8 @@
 import Logo from "../assets/logo.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { registerSiswa } from "../../service/authService";
+import Alert from "./Alert";
 
 const FormRegister = () => {
   const [nama, setNama] = useState("");
@@ -11,8 +13,65 @@ const FormRegister = () => {
   const [alamat, setAlamat] = useState("");
   const [noTelp, setNoTelp] = useState("");
 
+  const [alertConfig, setAlertConfig] = useState(null);
+  const navigate = useNavigate();
+
+  const closeAlert = () => setAlertConfig(null);
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: nama,
+        email,
+        password,
+        kelas,
+        angkatan,
+        alamat,
+        noTelp,
+      };
+
+      await registerSiswa(payload);
+
+      setAlertConfig({
+        type: "success",
+        title: "Registrasi Berhasil",
+        message: "Akun siswa berhasil dibuat!",
+        onClose: () => {
+          closeAlert();
+          navigate("/"); // navigasi ke halaman login
+        },
+      });
+    } catch (error) {
+      if (error.response) {
+        setAlertConfig({
+          type: "error",
+          title: "Registrasi Gagal",
+          message: error.response.data.message,
+          onClose: closeAlert,
+        });
+      } else if (error.request) {
+        setAlertConfig({
+          type: "error",
+          title: "Tidak Ada Respon",
+          message: "Server tidak merespon. Coba lagi nanti.",
+          onClose: closeAlert,
+        });
+      } else {
+        setAlertConfig({
+          type: "error",
+          title: "Kesalahan",
+          message: error.message,
+          onClose: closeAlert,
+        });
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen pt-8 flex flex-col md:flex-row items-center justify-center gap-8 px-4 py-2 bg-white">
+      {alertConfig && <Alert {...alertConfig} />}
+
       {/* Form kiri */}
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg md:mr-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-1 text-center md:text-left">
@@ -26,10 +85,9 @@ const FormRegister = () => {
         </h4>
 
         <form
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={handleRegister}
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
-          {/* Nama */}
           <div>
             <label
               htmlFor="nama"
@@ -43,12 +101,10 @@ const FormRegister = () => {
               value={nama}
               onChange={(e) => setNama(e.target.value)}
               required
-              placeholder="Nama"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* Kelas */}
           <div>
             <label
               htmlFor="kelas"
@@ -62,12 +118,10 @@ const FormRegister = () => {
               value={kelas}
               onChange={(e) => setKelas(e.target.value)}
               required
-              placeholder="Kelas"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* Angkatan */}
           <div>
             <label
               htmlFor="angkatan"
@@ -81,12 +135,10 @@ const FormRegister = () => {
               value={angkatan}
               onChange={(e) => setAngkatan(e.target.value)}
               required
-              placeholder="Angkatan"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* No. Telepon */}
           <div>
             <label
               htmlFor="noTelp"
@@ -100,18 +152,16 @@ const FormRegister = () => {
               value={noTelp}
               onChange={(e) => setNoTelp(e.target.value)}
               required
-              placeholder="No. Telepon"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* Email */}
           <div>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Username
+              Email
             </label>
             <input
               type="email"
@@ -119,12 +169,10 @@ const FormRegister = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="Email"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* Password */}
           <div>
             <label
               htmlFor="password"
@@ -138,12 +186,10 @@ const FormRegister = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Password"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* Alamat (1 baris penuh) */}
           <div className="md:col-span-2">
             <label
               htmlFor="alamat"
@@ -157,12 +203,10 @@ const FormRegister = () => {
               value={alamat}
               onChange={(e) => setAlamat(e.target.value)}
               required
-              placeholder="Alamat lengkap"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          {/* Tombol Submit (1 baris penuh) */}
           <div className="md:col-span-2">
             <button
               type="submit"
@@ -180,7 +224,6 @@ const FormRegister = () => {
         </form>
       </div>
 
-      {/* Logo kanan */}
       <div className="w-full max-w-sm mt-6 md:mt-0">
         <img src={Logo} alt="Logo SMAN 14" className="w-full h-auto" />
       </div>

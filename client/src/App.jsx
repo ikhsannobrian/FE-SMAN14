@@ -26,6 +26,9 @@ import FormUpdateKesiswaan from "./page/FormUpdateKesiswaan";
 import UserList from "./components/UserList";
 import FormUpdateASView from "./page/FormUpdateASView";
 import ProfileView from "./page/ProfileView";
+import AdminList from "./page/AdminListView";
+import StatusKonselingView from "./page/StatusKonselingView";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -44,31 +47,67 @@ const router = createBrowserRouter([
   },
   {
     path: "/profile",
-    element: <ProfileView />,
+    element: (
+      <ProtectedRoute>
+        <ProfileView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/statuskonseling",
+    element: (
+      <ProtectedRoute>
+        <StatusKonselingView />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/layanan-konseling",
-    element: <LayananKonseling />,
+    element: (
+      <ProtectedRoute>
+        <LayananKonseling />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/form-jk",
-    element: <FormJanjianKonseling />,
+    element: (
+      <ProtectedRoute>
+        <FormJanjianKonseling />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/form-ta",
-    element: <FormTA />,
+    element: (
+      <ProtectedRoute>
+        <FormTA />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/form-na",
-    element: <FormNA />,
+    element: (
+      <ProtectedRoute>
+        <FormNA />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/form-sertifikat",
-    element: <FormSertifikat />,
+    element: (
+      <ProtectedRoute>
+        <FormSertifikat />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true, // ✅ Tambahkan ini untuk redirect default
@@ -129,6 +168,10 @@ const router = createBrowserRouter([
       {
         path: "userlist",
         element: <UserList />,
+      },
+      {
+        path: "adminlist",
+        element: <AdminList />,
       },
       {
         path: "updateas/:id",

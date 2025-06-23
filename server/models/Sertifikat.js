@@ -6,7 +6,7 @@ const SertifikatSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Siswa",
       required: true,
-      unique: true,
+      // unique: true,
     },
     jenissertifikat: {
       type: String,
@@ -21,11 +21,11 @@ const SertifikatSchema = new mongoose.Schema(
       required: [true, "Penyelenggara lomba harus diisi"],
     },
     mulailomba: {
-      type: String,
+      type: Date,
       required: [true, "Mulai lomba harus diisi"],
     },
     selesailomba: {
-      type: String,
+      type: Date,
       required: [true, "Selesai lomba harus diisi"],
     },
     tingkatlomba: {

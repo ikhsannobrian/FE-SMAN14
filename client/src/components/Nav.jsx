@@ -100,6 +100,15 @@ const Nav = ({ isDashboard, onToggleSidebar }) => {
                   >
                     Layanan Konseling
                   </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      navigate("/statuskonseling");
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    Status Konseling
+                  </button>
                 </>
               )}
               <button

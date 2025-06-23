@@ -4,15 +4,15 @@ const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, "Email is required"],
+      unique: [true, "email sudah pernah didaftarkan"],
       match: /.+\@.+\..+/,
       minlength: 5,
       maxlength: 100,
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
       minlength: 6,
       maxlength: 100,
     },

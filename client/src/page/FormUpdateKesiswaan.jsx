@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FormKesiswaan from "../components/FormKesiswaan";
+import {
+  updatePelanggaranSiswa,
+  getAllPelanggaranSiswa,
+} from "../../service/pelanggaranSiswaService";
 
 const FormUpdateKesiswaan = () => {
   const { id } = useParams();
@@ -8,23 +12,30 @@ const FormUpdateKesiswaan = () => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    // Ambil data berdasarkan ID dari backend (misalnya menggunakan fetch)
-    const dummy = {
-      nama: "Fanisa Rizki",
-      kelas: "XII.3",
-      pelanggaran: "Atribut tidak lengkap",
-      tanggalpelanggaran: "2023-04-24", // Ganti format tanggal menjadi YYYY-MM-DD
-      poin: "30",
-      penjelasan: "Terlambat masuk sekolah sekitar 10 menit",
+    const fetchData = async () => {
+      try {
+        const allData = await getAllPelanggaranSiswa();
+        const selected = allData.data.find((item) => item._id === id);
+        if (selected) {
+          // Sesuaikan format tanggal agar bisa langsung diisi ke <input type="date">
+          selected.tanggal = selected.tanggal?.slice(0, 10); // ambil 'YYYY-MM-DD'
+          setData(selected);
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data:", error);
+      }
     };
-    setData(dummy);
+
+    fetchData();
   }, [id]);
 
-  const handleUpdate = (updatedData) => {
-    console.log("Data diperbarui:", updatedData);
-    // Kirim data ke backend (misalnya menggunakan fetch)
-    // Contoh: updateData(updatedData);
-    navigate("/admin/tabelpelanggaran");
+  const handleUpdate = async (updatedData) => {
+    try {
+      await updatePelanggaranSiswa(id, updatedData);
+      navigate("/admin/tabelpelanggaran");
+    } catch (error) {
+      console.error("Gagal mengupdate data:", error);
+    }
   };
 
   return data ? (

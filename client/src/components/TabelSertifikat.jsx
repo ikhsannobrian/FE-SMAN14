@@ -1,14 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   PencilSquareIcon,
   TrashIcon,
   EyeIcon,
 } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
+import { api } from "../../service/api";
+import { deleteSertifikat } from "../../service/sertifikat";
+
+// Fungsi format tanggal ke dd-mm-yyyy
+const formatTanggal = (tanggalString) => {
+  if (!tanggalString) return "-";
+  const tanggal = new Date(tanggalString);
+  const dd = String(tanggal.getDate()).padStart(2, "0");
+  const mm = String(tanggal.getMonth() + 1).padStart(2, "0");
+  const yyyy = tanggal.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+};
 
 const TabelSertifikat = () => {
+  const [data, setData] = useState([]);
   const [search, setSearch] = useState({
-    nama: "",
+    name: "",
+    kelas: "",
+    angkatan: "",
     jenissertifikat: "",
     penyelenggaralomba: "",
     bidanglomba: "",
@@ -16,49 +31,44 @@ const TabelSertifikat = () => {
     selesailomba: "",
     tingkatlomba: "",
   });
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const data = [
-    {
-      id: 1,
-      nama: "Fauzan Arbhi",
-      jenissertifikat: "Akademik",
-      penyelenggaralomba: "POPDA JAWA BARAT 2024",
-      bidanglomba: "Matematika",
-      mulailomba: "01-01-2023",
-      selesailomba: "31-12-2023",
-      tingkatlomba: "Nasional",
-      image: "",
-    },
-    {
-      id: 2,
-      nama: "Fanisa Rizki",
-      jenissertifikat: "Non-Akademik",
-      penyelenggaralomba: "PPOP JAWA BARAT 2024",
-      bidanglomba: "Basket",
-      mulailomba: "01-03-2023",
-      selesailomba: "32-12-2023",
-      tingkatlomba: "Kota",
-      image: "",
-    },
-    {
-      id: 3,
-      nama: "Nur Afra Fadhillah",
-      jenissertifikat: "Akademik",
-      penyelenggaralomba: "POPDA JAWA BARAT 2024",
-      bidanglomba: "Sejarah",
-      mulailomba: "01-01-2023",
-      selesailomba: "31-12-2023",
-      tingkatlomba: "Nasional",
-      image: "",
-    },
-  ];
+  const fetchData = async () => {
+    try {
+      const response = await api.get("/api/sertifikat");
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching data sertifikat:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Yakin ingin menghapus sertifikat ini?"
+    );
+    if (!confirmDelete) return;
+    try {
+      await deleteSertifikat(id);
+      alert("Sertifikat berhasil dihapus.");
+      fetchData(); // refresh data
+    } catch (error) {
+      console.error("Gagal menghapus sertifikat:", error);
+      alert("Terjadi kesalahan saat menghapus.");
+    }
+  };
 
   const filtered = data.filter((item) =>
-    Object.entries(search).every(([key, val]) =>
-      item[key]?.toLowerCase().includes(val.toLowerCase())
-    )
+    Object.entries(search).every(([key, val]) => {
+      if (!val) return true;
+      if (["name", "kelas", "angkatan"].includes(key)) {
+        return item.siswa?.[key]?.toLowerCase().includes(val.toLowerCase());
+      }
+      return item[key]?.toLowerCase().includes(val.toLowerCase());
+    })
   );
 
   const displayedData =
@@ -96,10 +106,36 @@ const TabelSertifikat = () => {
                 <div>
                   <input
                     type="text"
-                    placeholder="Masukan Nama"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    placeholder="Masukkan Nama"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
-                      setSearch({ ...search, nama: e.target.value })
+                      setSearch({ ...search, name: e.target.value })
+                    }
+                  />
+                </div>
+              </th>
+              <th className="px-3 py-2 font-semibold">
+                Kelas
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Masukkan Kelas"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    onChange={(e) =>
+                      setSearch({ ...search, kelas: e.target.value })
+                    }
+                  />
+                </div>
+              </th>
+              <th className="px-3 py-2 font-semibold">
+                Angkatan
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Masukkan Angkatan"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    onChange={(e) =>
+                      setSearch({ ...search, angkatan: e.target.value })
                     }
                   />
                 </div>
@@ -108,7 +144,7 @@ const TabelSertifikat = () => {
                 Jenis Sertifikat
                 <div>
                   <select
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
                       setSearch({ ...search, jenissertifikat: e.target.value })
                     }
@@ -120,12 +156,12 @@ const TabelSertifikat = () => {
                 </div>
               </th>
               <th className="px-3 py-2 font-semibold">
-                Jenis Olahraga / Akademik
+                Bidang Lomba
                 <div>
                   <input
                     type="text"
-                    placeholder="Angkatan"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    placeholder="Masukkan Bidang"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
                       setSearch({ ...search, bidanglomba: e.target.value })
                     }
@@ -133,12 +169,12 @@ const TabelSertifikat = () => {
                 </div>
               </th>
               <th className="px-3 py-2 font-semibold">
-                Penyelenggara Lomba
+                Penyelenggara
                 <div>
                   <input
                     type="text"
-                    placeholder="Penyelenggara Lomba"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    placeholder="Masukkan Penyelenggara"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
                       setSearch({
                         ...search,
@@ -153,8 +189,8 @@ const TabelSertifikat = () => {
                 <div>
                   <input
                     type="text"
-                    placeholder="Mulai Lomba"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    placeholder="DD-MM-YYYY"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
                       setSearch({ ...search, mulailomba: e.target.value })
                     }
@@ -166,8 +202,8 @@ const TabelSertifikat = () => {
                 <div>
                   <input
                     type="text"
-                    placeholder="Selesai Lomba"
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    placeholder="DD-MM-YYYY"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
                       setSearch({ ...search, selesailomba: e.target.value })
                     }
@@ -175,10 +211,10 @@ const TabelSertifikat = () => {
                 </div>
               </th>
               <th className="px-3 py-2 font-semibold">
-                Tingkat Lomba
+                Tingkat
                 <div>
                   <select
-                    className="w-40 max-w-full mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                    className="w-40 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
                     onChange={(e) =>
                       setSearch({ ...search, tingkatlomba: e.target.value })
                     }
@@ -197,28 +233,38 @@ const TabelSertifikat = () => {
           <tbody>
             {displayedData.map((item, idx) => (
               <tr
-                key={`${item.id}-${idx}`}
+                key={`${item._id}-${idx}`}
                 className="border-b hover:bg-gray-50 transition-colors"
               >
-                <td className="px-3  py-2">{idx + 1}</td>
-                <td className="px-3  py-2">{item.nama}</td>
-                <td className="px-3  py-2">{item.jenissertifikat}</td>
-                <td className="px-3  py-2">{item.bidanglomba}</td>
-                <td className="px-3  py-2">{item.penyelenggaralomba}</td>
-                <td className="px-3  py-2">{item.mulailomba}</td>
-                <td className="px-3  py-2">{item.selesailomba}</td>
-                <td className="px-3  py-2">{item.tingkatlomba}</td>
-                <td className="px-3  py-2">
+                <td className="px-3 py-2">{idx + 1}</td>
+                <td className="px-3 py-2">{item.siswa?.name || "-"}</td>
+                <td className="px-3 py-2">{item.siswa?.kelas || "-"}</td>
+                <td className="px-3 py-2">{item.siswa?.angkatan || "-"}</td>
+                <td className="px-3 py-2">{item.jenissertifikat}</td>
+                <td className="px-3 py-2">{item.bidanglomba}</td>
+                <td className="px-3 py-2">{item.penyelenggaralomba}</td>
+                <td className="px-3 py-2">{formatTanggal(item.mulailomba)}</td>
+                <td className="px-3 py-2">
+                  {formatTanggal(item.selesailomba)}
+                </td>
+                <td className="px-3 py-2">{item.tingkatlomba}</td>
+                <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <EyeIcon
                       className="h-5 w-5 text-blue-600 cursor-pointer"
                       title="Lihat Gambar"
-                      onClick={() => window.open(item.image || "", "_blank")}
+                      onClick={() =>
+                        window.open(item.uploadSertifikat || "", "_blank")
+                      }
                     />
-                    <Link to={`/admin/updatesertifikat/${item.id}`}>
+                    <Link to={`/admin/updatesertifikat/${item._id}`}>
                       <PencilSquareIcon className="h-5 w-5 text-green-600 hover:text-blue-800 cursor-pointer" />
                     </Link>
-                    <TrashIcon className="h-5 w-5 text-red-600 cursor-pointer" />
+                    <TrashIcon
+                      className="h-5 w-5 text-red-600 cursor-pointer"
+                      title="Hapus Sertifikat"
+                      onClick={() => handleDelete(item._id)}
+                    />
                   </div>
                 </td>
               </tr>

@@ -1,8 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUser } from "react-icons/fa";
+import { getProfileSiswa, updateProfileSiswa } from "../../service/authService";
+import Alert from "./Alert";
 
 const Profile = () => {
-  const majors = ["Informatika", "Sistem Informasi", "Teknik Komputer"];
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    kelas: "",
+    angkatan: "",
+    noTelp: "",
+    password: "",
+  });
+
+  const [showAlert, setShowAlert] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await getProfileSiswa(); // tidak perlu pakai ID
+        setFormData({
+          name: res.data.name || "",
+          email: res.data.email || "",
+          kelas: res.data.kelas || "",
+          angkatan: res.data.angkatan || "",
+          noTelp: res.data.noTelp || "",
+          password: "", // default kosong
+        });
+      } catch (err) {
+        console.error("Gagal mengambil profil siswa:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -12,6 +43,16 @@ const Profile = () => {
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateProfileSiswa(formData); // tidak pakai ID
+      setShowAlert(true);
+    } catch (err) {
+      console.error("Gagal update profil:", err);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen flex flex-col px-10 py-8 bg-base-100">
       <h2 className="text-2xl font-bold mb-6 flex items-center">
@@ -19,7 +60,16 @@ const Profile = () => {
         My Profile
       </h2>
 
-      <form className="flex flex-col gap-6 w-full">
+      {showAlert && (
+        <Alert
+          type="success"
+          message="Profil berhasil diperbarui!"
+          showCloseButton={true}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full">
         {/* Nama */}
         <div>
           <label className="label">
@@ -27,10 +77,11 @@ const Profile = () => {
           </label>
           <input
             type="text"
-            name="nama"
-            placeholder="Ikhsan Nobrian"
-            value=""
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
             className="input input-bordered w-full"
+            required
           />
         </div>
 
@@ -42,9 +93,10 @@ const Profile = () => {
           <input
             type="email"
             name="email"
-            placeholder="ikhsannobrian@gmail.com"
-            value=""
+            value={formData.email}
+            onChange={handleChange}
             className="input input-bordered w-full"
+            required
           />
         </div>
 
@@ -56,11 +108,13 @@ const Profile = () => {
           <input
             type="text"
             name="kelas"
-            placeholder="XII IPA 3"
-            value=""
+            value={formData.kelas}
+            onChange={handleChange}
             className="input input-bordered w-full"
+            required
           />
         </div>
+
         {/* Angkatan */}
         <div>
           <label className="label">
@@ -69,26 +123,43 @@ const Profile = () => {
           <input
             type="text"
             name="angkatan"
-            placeholder="14"
-            value=""
+            value={formData.angkatan}
+            onChange={handleChange}
             className="input input-bordered w-full"
+            required
           />
         </div>
-        {/* No Telepon */}
+
+        {/* Nomor Telepon */}
         <div>
           <label className="label">
             <span className="label-text">Nomor Telepon</span>
           </label>
           <input
             type="text"
-            name="noTelps"
-            placeholder="08123456789"
-            value=""
+            name="noTelp"
+            value={formData.noTelp}
+            onChange={handleChange}
+            className="input input-bordered w-full"
+            required
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label className="label">
+            <span className="label-text">Password (opsional)</span>
+          </label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Kosongkan jika tidak ingin diubah"
             className="input input-bordered w-full"
           />
         </div>
 
-        {/* Buttons */}
         <div className="flex justify-end pt-6">
           <button type="submit" className="btn btn-success text-white">
             Save

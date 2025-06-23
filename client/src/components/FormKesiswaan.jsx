@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Alert from "./Alert";
+import { createPelanggaranSiswa } from "../../service/pelanggaranSiswaService";
+import { jenisPelanggaran } from "../../service/jenisPelanggaran";
 
-const FormKesiswaan = ({ isEdit = false, initialData = {} }) => {
+const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     nama: "",
     kelas: "",
@@ -17,7 +20,6 @@ const FormKesiswaan = ({ isEdit = false, initialData = {} }) => {
 
   useEffect(() => {
     if (isEdit && initialData && Object.keys(initialData).length > 0) {
-      console.log("Initial data received:", initialData);
       setFormData((prev) => ({
         ...prev,
         ...initialData,
@@ -27,29 +29,67 @@ const FormKesiswaan = ({ isEdit = false, initialData = {} }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    if (name === "pelanggaran") {
+      const selected = jenisPelanggaran.find((p) => p.nama === value);
+      setFormData((prev) => ({
+        ...prev,
+        pelanggaran: value,
+        poin: selected ? selected.poin : "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isEdit) {
-      console.log("Updating data:", formData);
-      // Tambahkan logika update di sini
-      setAlertMessage("Data pelanggaran berhasil diperbarui!");
+
+    if (isEdit && typeof initialData._id !== "undefined") {
+      // Mode update
+      try {
+        await onSubmit(formData); // onSubmit dari parent (FormUpdateKesiswaan)
+        setAlertMessage("Data pelanggaran berhasil diperbarui!");
+        setShowAlert(true);
+      } catch (err) {
+        console.error("Gagal memperbarui data pelanggaran:", err);
+        setAlertMessage("Gagal memperbarui data pelanggaran.");
+        setShowAlert(true);
+      }
     } else {
-      console.log("Submitting data:", formData);
-      // Tambahkan logika tambah di sini
-      setAlertMessage("Data pelanggaran berhasil ditambahkan!");
+      // Mode create
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const adminId = user?.id || user?._id;
+
+        const payload = [
+          {
+            admin: adminId,
+            nama: formData.nama,
+            kelas: formData.kelas,
+            tanggal: formData.tanggal,
+            pelanggaran: formData.pelanggaran,
+            penjelasan: formData.penjelasan,
+          },
+        ];
+
+        await createPelanggaranSiswa(payload);
+        setAlertMessage("Data pelanggaran berhasil ditambahkan!");
+        setShowAlert(true);
+      } catch (err) {
+        console.error("Gagal submit data pelanggaran:", err);
+        setAlertMessage("Gagal menambahkan data pelanggaran.");
+        setShowAlert(true);
+      }
     }
-    setShowAlert(true);
   };
 
   const handleCloseAlert = () => {
     setShowAlert(false);
-    navigate(isEdit ? "/admin/tabelpelanggaran" : "/admin/formkesiswaan");
+    navigate("/admin/formkesiswaan");
   };
 
   return (
@@ -117,13 +157,11 @@ const FormKesiswaan = ({ isEdit = false, initialData = {} }) => {
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           >
             <option value="">Pilih Pelanggaran</option>
-            <option value="Tidak Menggunakan Atribut">
-              Tidak Menggunakan Atribut
-            </option>
-            <option value="Datang Terlambat">Datang Terlambat</option>
-            <option value="Tidak Mengikuti Upacara">
-              Tidak Mengikuti Upacara
-            </option>
+            {jenisPelanggaran.map((item) => (
+              <option key={item.nama} value={item.nama}>
+                {item.nama}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -140,13 +178,14 @@ const FormKesiswaan = ({ isEdit = false, initialData = {} }) => {
         </div>
 
         {isEdit && (
-          <div className="text-right">
-            <a
-              href="/admin/tabelpelanggaran"
-              className="inline-block text-black-500 hover:text-blue-700 mb-2"
+          <div className="text-left">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/tabelpelanggaran")}
+              className="text-blue-600 hover:underline text-sm font-medium"
             >
-              Kembali ke Tabel Pelanggaran
-            </a>
+              Kembali ke Tabel Pelanggaran Siswa
+            </button>
           </div>
         )}
 

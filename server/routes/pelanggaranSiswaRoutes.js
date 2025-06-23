@@ -5,6 +5,7 @@ import {
   updatePelanggaranSiswa,
   deletePelanggaranSiswa,
   getAllPelanggaranSiswa,
+  getRekapPoinBulanan,
 } from "../controllers/pelanggaranSiswaController.js";
 import {
   authMiddleware,
@@ -13,8 +14,12 @@ import {
 
 const router = express.Router();
 
-router.get("/:id", authMiddleware, adminMiddleware, getPelanggaranSiswaById);
+// Rekap per bulan
+router.get("/rekap", authMiddleware, adminMiddleware, getRekapPoinBulanan);
+
+// CRUD
 router.get("/", authMiddleware, adminMiddleware, getAllPelanggaranSiswa);
+router.get("/:id", authMiddleware, adminMiddleware, getPelanggaranSiswaById);
 router.post("/", authMiddleware, adminMiddleware, createPelanggaranSiswa);
 router.put("/:id", authMiddleware, adminMiddleware, updatePelanggaranSiswa);
 router.delete("/:id", authMiddleware, adminMiddleware, deletePelanggaranSiswa);
