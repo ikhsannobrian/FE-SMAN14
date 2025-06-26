@@ -294,3 +294,41 @@ export const deleteAdmin = async (req, res) => {
       .json({ message: "Error deleting admin", error: error.message });
   }
 };
+
+// ==================== UPDATE ADMIN (Hanya di Admin collection) ====================
+export const updateAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password } = req.body;
+
+  try {
+    const admin = await Admin.findById(id).populate("user"); // agar bisa akses user-nya langsung
+    if (!admin) {
+      return res.status(404).json({ message: "Admin tidak ditemukan" });
+    }
+
+    // ✅ Update data Admin
+    admin.name = name || admin.name;
+    admin.email = email || admin.email;
+    await admin.save();
+
+    // ✅ Update data User yang terkait (untuk email login dan password)
+    if (admin.user) {
+      admin.user.name = name || admin.user.name;
+      admin.user.email = email || admin.user.email;
+
+      if (password && password.trim() !== "") {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        admin.user.password = hashedPassword;
+      }
+
+      await admin.user.save();
+    }
+
+    res.status(200).json({ message: "Akun admin berhasil diperbarui" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Gagal update akun admin",
+      error: error.message,
+    });
+  }
+};

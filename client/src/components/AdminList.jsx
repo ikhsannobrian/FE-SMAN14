@@ -114,7 +114,7 @@ const AdminList = () => {
                 <td className="px-3 py-2">{admin.user?.email ?? "-"}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <Link to={`/admin/update/${admin._id}`}>
+                    <Link to={`/admin/updateadmin/${admin._id}`}>
                       <PencilSquareIcon className="h-5 w-5 text-green-600 hover:text-blue-800 cursor-pointer" />
                     </Link>
                     <TrashIcon

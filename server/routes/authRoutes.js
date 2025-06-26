@@ -11,6 +11,7 @@ import {
   getProfileSiswa,
   getAllAdmin,
   deleteAdmin,
+  updateAdmin,
 } from "../controllers/authController.js";
 import {
   authMiddleware,
@@ -25,6 +26,7 @@ router.get("/siswa", getAllSiswa);
 router.post("/register/siswa", registerSiswa);
 router.post("/register/admin", registerAdmin);
 router.get("/admin", getAllAdmin);
+router.put("/admin/:id", updateAdmin);
 router.delete("/admin/:id", deleteAdmin);
 
 // ✅ Route spesifik HARUS di atas route dinamis

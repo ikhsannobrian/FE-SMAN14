@@ -3,7 +3,24 @@ import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
 import Siswa from "../models/Siswa.js";
 
-// Tambah Sertifikat
+// 🔼 Fungsi upload ke Cloudinary
+const streamUpload = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "uploads",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (result) resolve(result);
+        else reject(error);
+      }
+    );
+    streamifier.createReadStream(fileBuffer).pipe(stream);
+  });
+};
+
+// ➕ Tambah Sertifikat
 export const createSertifikat = async (req, res) => {
   try {
     const {
@@ -24,41 +41,16 @@ export const createSertifikat = async (req, res) => {
     }
 
     if (!req.file) {
-      return res.status(400).json({
-        message: "File sertifikat harus diupload.",
-      });
+      return res
+        .status(400)
+        .json({ message: "File sertifikat harus diupload." });
     }
 
-    // Fungsi upload ke Cloudinary
-    const streamUpload = () => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: "uploads",
-            resource_type: "image",
-          },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-
-        streamifier.createReadStream(req.file.buffer).pipe(stream);
-      });
-    };
-
-    const result = await streamUpload();
+    const result = await streamUpload(req.file.buffer);
     const uploadSertifikat = result.secure_url;
 
-    if (!uploadSertifikat) {
-      return res.status(400).json({
-        message: "Upload ke Cloudinary gagal.",
-      });
-    }
-
-    // 🔧 Pastikan field siswa diisi dengan ID siswa (tipe ObjectId)
     const newSertifikat = new Sertifikat({
-      siswa, // pastikan ini berupa ObjectId (string valid)
+      siswa,
       jenissertifikat,
       bidanglomba,
       penyelenggaralomba,
@@ -83,24 +75,30 @@ export const createSertifikat = async (req, res) => {
   }
 };
 
-// Ambil Semua Sertifikat
+// 📥 Ambil Semua Sertifikat
 export const getAllSertifikat = async (req, res) => {
   try {
     const sertifikat = await Sertifikat.find().populate(
       "siswa",
       "name kelas angkatan"
     );
-
     res.status(200).json(sertifikat);
   } catch (error) {
-    res.status(500).json({ message: "Gagal mengambil data sertifikat", error });
+    res.status(500).json({
+      message: "Gagal mengambil data sertifikat",
+      error: error.message,
+    });
   }
 };
-// Ambil Sertifikat Berdasarkan ID
+
+// 📥 Ambil Berdasarkan ID
 export const getSertifikatById = async (req, res) => {
   try {
     const { id } = req.params;
-    const sertifikat = await Sertifikat.findById(id);
+    const sertifikat = await Sertifikat.findById(id).populate(
+      "siswa",
+      "name kelas angkatan"
+    );
 
     if (!sertifikat) {
       return res.status(404).json({ message: "Sertifikat tidak ditemukan" });
@@ -108,16 +106,18 @@ export const getSertifikatById = async (req, res) => {
 
     res.status(200).json(sertifikat);
   } catch (error) {
-    res.status(500).json({ message: "Gagal mengambil data sertifikat", error });
+    res.status(500).json({
+      message: "Gagal mengambil data sertifikat",
+      error: error.message,
+    });
   }
 };
 
-// Update Sertifikat
+// ✏️ Update Sertifikat
 export const updateSertifikat = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      siswa,
       jenissertifikat,
       bidanglomba,
       penyelenggaralomba,
@@ -127,7 +127,6 @@ export const updateSertifikat = async (req, res) => {
     } = req.body;
 
     const updateData = {
-      siswa,
       jenissertifikat,
       bidanglomba,
       penyelenggaralomba,
@@ -137,24 +136,7 @@ export const updateSertifikat = async (req, res) => {
     };
 
     if (req.file) {
-      const streamUpload = () => {
-        return new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            {
-              folder: "uploads",
-              resource_type: "image",
-            },
-            (error, result) => {
-              if (result) resolve(result);
-              else reject(error);
-            }
-          );
-
-          streamifier.createReadStream(req.file.buffer).pipe(stream);
-        });
-      };
-
-      const result = await streamUpload();
+      const result = await streamUpload(req.file.buffer);
       updateData.uploadSertifikat = result.secure_url;
     }
 
@@ -166,19 +148,33 @@ export const updateSertifikat = async (req, res) => {
       return res.status(404).json({ message: "Sertifikat tidak ditemukan" });
     }
 
-    res.status(200).json(updated);
+    res.status(200).json({
+      message: "Sertifikat berhasil diperbarui",
+      data: updated,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Gagal mengupdate sertifikat", error });
+    res.status(500).json({
+      message: "Gagal mengupdate sertifikat",
+      error: error.message,
+    });
   }
 };
 
-// Hapus Sertifikat
+// 🗑️ Hapus Sertifikat
 export const deleteSertifikat = async (req, res) => {
   try {
     const { id } = req.params;
-    await Sertifikat.findByIdAndDelete(id);
+    const deleted = await Sertifikat.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Sertifikat tidak ditemukan" });
+    }
+
     res.status(200).json({ message: "Sertifikat berhasil dihapus" });
   } catch (error) {
-    res.status(500).json({ message: "Gagal menghapus sertifikat", error });
+    res.status(500).json({
+      message: "Gagal menghapus sertifikat",
+      error: error.message,
+    });
   }
 };

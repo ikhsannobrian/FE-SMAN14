@@ -26,7 +26,7 @@ router.get(
 router.get("/:id", authMiddleware, adminMiddleware, getJanjiKonselingById);
 router.get("/", authMiddleware, adminMiddleware, getAllJanjiKonseling);
 router.post("/", authMiddleware, siswaMiddleware, createJanjiKonseling);
-router.put("/:id", authMiddleware, siswaMiddleware, updateJanjiKonseling);
+router.put("/:id", authMiddleware, adminMiddleware, updateJanjiKonseling);
 router.patch(
   "/:id/status",
   authMiddleware,

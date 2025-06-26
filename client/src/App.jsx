@@ -28,6 +28,7 @@ import FormUpdateASView from "./page/FormUpdateASView";
 import ProfileView from "./page/ProfileView";
 import AdminList from "./page/AdminListView";
 import StatusKonselingView from "./page/StatusKonselingView";
+import FormUpdateAkunAdmin from "./page/FormUpdateAkunAdmin";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 const router = createBrowserRouter([
@@ -176,6 +177,10 @@ const router = createBrowserRouter([
       {
         path: "updateas/:id",
         element: <FormUpdateASView />,
+      },
+      {
+        path: "updateadmin/:id",
+        element: <FormUpdateAkunAdmin />,
       },
     ],
   },

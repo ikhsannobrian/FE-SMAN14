@@ -1,18 +1,50 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Alert from "./Alert";
-import { registerAdmin } from "../../service/authService"; // pastikan path ini sesuai struktur project kamu
+import {
+  registerAdmin,
+  updateAdmin,
+  getAllAdmin,
+} from "../../service/authService";
 
 const CreateAkunAdmin = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
-    name: "", // diganti dari nama ke name
+    name: "",
     email: "",
     password: "",
   });
 
   const navigate = useNavigate();
+  const { id } = useParams(); // ambil ID dari URL jika ada
+  const isUpdate = !!id;
+
+  useEffect(() => {
+    if (isUpdate) {
+      const fetchAdmin = async () => {
+        try {
+          const response = await getAllAdmin();
+          const admin = response.data.find((a) => a._id === id);
+
+          if (admin) {
+            setFormData({
+              name: admin.name || "",
+              email: admin.user?.email || "",
+              password: "", // kosongkan saat update
+            });
+          } else {
+            setErrorMessage("Admin tidak ditemukan");
+          }
+        } catch (err) {
+          console.error("Gagal ambil admin:", err);
+          setErrorMessage("Gagal memuat data admin.");
+        }
+      };
+
+      fetchAdmin();
+    }
+  }, [id, isUpdate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,26 +56,26 @@ const CreateAkunAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await registerAdmin(formData); // kirim data dengan field name
+      if (isUpdate) {
+        await updateAdmin(id, formData);
+      } else {
+        await registerAdmin(formData);
+        setFormData({ name: "", email: "", password: "" });
+      }
+
       setShowAlert(true);
       setErrorMessage("");
 
-      // reset form
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-      });
-
-      // redirect setelah 2 detik
-      setTimeout(() => {
-        navigate("/admin/createadmin"); // sesuaikan dengan route kamu
-      }, 2000);
+      if (isUpdate) {
+        navigate("/admin/adminlist");
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Submit error:", error);
       setErrorMessage(
-        error?.response?.data?.message || "Gagal membuat akun admin."
+        error?.response?.data?.message ||
+          "Gagal memproses permintaan. Coba lagi."
       );
     }
   };
@@ -57,7 +89,11 @@ const CreateAkunAdmin = () => {
       {showAlert && (
         <Alert
           type="success"
-          message="Akun admin berhasil dibuat!"
+          message={
+            isUpdate
+              ? "Akun admin berhasil diperbarui!"
+              : "Akun admin berhasil dibuat!"
+          }
           onClose={handleCloseAlert}
           showCloseButton={true}
         />
@@ -75,7 +111,7 @@ const CreateAkunAdmin = () => {
           <label className="block text-sm font-medium mb-2">Nama</label>
           <input
             type="text"
-            name="name" // harus "name", bukan "nama"
+            name="name"
             value={formData.name}
             onChange={handleChange}
             placeholder="Nama Admin"
@@ -104,9 +140,11 @@ const CreateAkunAdmin = () => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="admin123"
+            placeholder={
+              isUpdate ? "Biarkan kosong jika tidak diubah" : "admin123"
+            }
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-            required
+            {...(!isUpdate && { required: true })}
           />
         </div>
 
@@ -115,7 +153,7 @@ const CreateAkunAdmin = () => {
             type="submit"
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow"
           >
-            Submit
+            {isUpdate ? "Update" : "Submit"}
           </button>
         </div>
       </form>

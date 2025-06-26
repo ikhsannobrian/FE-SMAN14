@@ -33,6 +33,10 @@ export const updateProfileSiswa = async (profileData) => {
   return api.put("/api/auth/siswa/profile", profileData);
 };
 
+export const updateAdmin = async (id, data) => {
+  return api.put(`/api/auth/admin/${id}`, data);
+};
+
 export const getAllAdmin = async () => {
   return api.get("/api/auth/admin");
 };

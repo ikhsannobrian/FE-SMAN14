@@ -23,10 +23,13 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
   const [error, setError] = useState(null);
   const [siswaId, setSiswaId] = useState("");
 
+  // Ambil siswaId hanya jika BUKAN update
   useEffect(() => {
     const fetchSiswaId = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
+        if (!user?.siswaId) return;
+
         const res = await axios.get(
           `http://localhost:5000/api/auth/siswa/${user.siswaId}`
         );
@@ -36,8 +39,10 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
       }
     };
 
-    fetchSiswaId();
-  }, []);
+    if (!isUpdate) {
+      fetchSiswaId();
+    }
+  }, [isUpdate]);
 
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -99,7 +104,6 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
       }
 
       setAlertVisible(true);
-
       setFormData({
         jenissertifikat: "",
         bidanglomba: "",
