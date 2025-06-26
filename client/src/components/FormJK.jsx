@@ -19,6 +19,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [siswaId, setSiswaId] = useState("");
+  const [formError, setFormError] = useState(""); // nampung error form
 
   useEffect(() => {
     const fetchSiswaId = async () => {
@@ -56,7 +57,14 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validation: make sure semua field diisi
+    if (!formData.tanggalJanji || !formData.waktuJanji || !formData.guruBK || !formData.keperluan) {
+      setFormError("Semua field harus diisi.");
+      return;
+    }
+
     try {
+      setFormError("");
       const payload = {
         siswa: siswaId,
         ...formData,
@@ -65,6 +73,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
       await onSubmit(payload);
       setAlertVisible(true);
     } catch (error) {
+      setFormError("Terjadi kesalahan saat mengirim data.");
       console.error("Error submitting form:", error);
     }
   };
@@ -79,7 +88,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
 
   const handleAlertClose = () => {
     setAlertVisible(false);
-    navigate(isUpdate ? "/admin/tabeljk" : "/form-jk");
+    navigate(isUpdate ? "/admin/tabeljk" : "/layanan-konseling");
   };
 
   return (
@@ -116,7 +125,19 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
             type="date"
             name="tanggalJanji"
             value={formData.tanggalJanji}
-            onChange={handleChange}
+            min={new Date(Date.now() + 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0]}
+            onChange={(e) => {
+              const selectedDate = new Date(e.target.value);
+              const day = selectedDate.getDay();
+              // 0 = Sunday, 6 = Saturday
+              if (day === 0 || day === 6) {
+                alert("Hanya bisa memilih hari kerja (Senin - Jumat)");
+                return;
+              }
+              handleChange(e);
+            }}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
         </div>
@@ -125,12 +146,17 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
         <div>
           <label className="block text-sm font-medium mb-2">Jam</label>
           <input
-            type="text"
+            type="time"
             name="waktuJanji"
             value={formData.waktuJanji}
             onChange={handleChange}
+            min="07:00"
+            max="16:00"
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
+          <small className="text-gray-500">
+            Pilih waktu antara 07:00 dan 16:00 (interval 15 menit)
+          </small>
         </div>
 
         {/* Guru BK */}
@@ -181,6 +207,11 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
               <option value="Tidak Disetujui">Tidak Disetujui</option>
             </select>
           </div>
+        )}
+
+        {/* Error message */}
+        {formError && (
+          <div className="text-red-500 text-sm mb-2">{formError}</div>
         )}
 
         {/* Navigasi dan Submit */}
