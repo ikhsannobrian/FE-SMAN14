@@ -1,7 +1,7 @@
 import { api } from "./api";
 
 export const createNilaiAkademik = async (data) => {
-  return api.post("/api/nilaiAkademik/", data);
+  return api.post("/api/nilaiAkademik", data);
 };
 
 export const getAllNilaiAkademik = async () => {

@@ -67,10 +67,6 @@ const CreateAkunAdmin = () => {
 
       setShowAlert(true);
       setErrorMessage("");
-
-      if (isUpdate) {
-        navigate("/admin/adminlist");
-      }
     } catch (error) {
       console.error("Submit error:", error);
       setErrorMessage(
@@ -82,6 +78,9 @@ const CreateAkunAdmin = () => {
 
   const handleCloseAlert = () => {
     setShowAlert(false);
+    if (isUpdate) {
+      navigate("/admin/adminlist");
+    }
   };
 
   return (
@@ -89,18 +88,25 @@ const CreateAkunAdmin = () => {
       {showAlert && (
         <Alert
           type="success"
+          title="Berhasil"
           message={
             isUpdate
               ? "Akun admin berhasil diperbarui!"
               : "Akun admin berhasil dibuat!"
           }
           onClose={handleCloseAlert}
-          showCloseButton={true}
+          buttonLabel="OK"
         />
       )}
 
       {errorMessage && (
-        <Alert type="error" message={errorMessage} showCloseButton={true} />
+        <Alert
+          type="error"
+          title="Gagal"
+          message={errorMessage}
+          onClose={() => setErrorMessage("")}
+          buttonLabel="Tutup"
+        />
       )}
 
       <form

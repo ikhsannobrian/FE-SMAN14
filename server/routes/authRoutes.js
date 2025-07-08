@@ -12,6 +12,8 @@ import {
   getAllAdmin,
   deleteAdmin,
   updateAdmin,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/authController.js";
 import {
   authMiddleware,
@@ -22,6 +24,8 @@ import {
 const router = express.Router();
 
 router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.put("/reset-password/:token", resetPassword);
 router.get("/siswa", getAllSiswa);
 router.post("/register/siswa", registerSiswa);
 router.post("/register/admin", registerAdmin);

@@ -11,11 +11,7 @@ const FormNAView = () => {
       await createNilaiAkademik(formData);
       console.log("Data nilai akademik berhasil dikirim!");
     } catch (error) {
-      console.error(
-        "❌ Gagal kirim data:",
-        error?.response?.data || error.message
-      );
-      throw error; // ⬅️ Tambahkan baris ini agar FormNA.jsx tahu bahwa request gagal
+      return Promise.reject(error); // Gunakan ini agar FormNA tetap bisa menampilkan alert
     }
   };
 

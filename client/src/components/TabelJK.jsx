@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
@@ -7,10 +7,9 @@ import {
   deleteJanjiKonseling,
 } from "../../service/janjianKonselingService";
 
-// Fungsi untuk ubah ISO date ke dd-mm-yyyy
 const formatTanggal = (tanggal) => {
   const date = new Date(tanggal);
-  return new Intl.DateTimeFormat("id-ID").format(date); // output: dd/mm/yyyy
+  return new Intl.DateTimeFormat("id-ID").format(date);
 };
 
 const TabelJK = () => {
@@ -36,48 +35,52 @@ const TabelJK = () => {
     fetchData();
   }, []);
 
-  const handleStatusUpdate = async (id, newStatus) => {
+  const handleStatusUpdate = useCallback(async (id, newStatus) => {
     try {
       await updateStatusJanjiKonseling(id, newStatus);
-      setData((prevData) =>
-        prevData.map((item) =>
+      setData((prev) =>
+        prev.map((item) =>
           item._id === id ? { ...item, status: newStatus } : item
         )
       );
     } catch (error) {
       console.error("Gagal update status:", error);
     }
-  };
+  }, []);
 
-  const filtered = data.filter((item) =>
-    Object.entries(search).every(([key, val]) => {
-      if (key === "nama")
-        return item.siswa?.name?.toLowerCase().includes(val.toLowerCase());
-      if (key === "kelas")
-        return item.siswa?.kelas?.toLowerCase().includes(val.toLowerCase());
-      if (key === "tanggalJanji")
-        return formatTanggal(item.tanggalJanji)
-          .toLowerCase()
-          .includes(val.toLowerCase());
-      return item[key]?.toLowerCase().includes(val.toLowerCase());
-    })
-  );
-  const handleDelete = async (id) => {
-    const confirm = window.confirm("Yakin ingin menghapus data ini?");
-    if (!confirm) return;
-
+  const handleDelete = useCallback(async (id) => {
+    if (!confirm("Yakin ingin menghapus data ini?")) return;
     try {
       await deleteJanjiKonseling(id);
-      // Refresh data setelah delete
-      setData((prevData) => prevData.filter((item) => item._id !== id));
+      setData((prev) => prev.filter((item) => item._id !== id));
     } catch (error) {
       console.error("Gagal menghapus:", error);
       alert("Terjadi kesalahan saat menghapus data.");
     }
-  };
+  }, []);
 
-  const displayedData =
-    rowsPerPage === "all" ? filtered : filtered.slice(0, Number(rowsPerPage));
+  const filtered = useMemo(() => {
+    return data.filter((item) =>
+      Object.entries(search).every(([key, val]) => {
+        if (!val) return true;
+        if (key === "nama")
+          return item.siswa?.name?.toLowerCase().includes(val.toLowerCase());
+        if (key === "kelas")
+          return item.siswa?.kelas?.toLowerCase().includes(val.toLowerCase());
+        if (key === "tanggalJanji")
+          return formatTanggal(item.tanggalJanji)
+            .toLowerCase()
+            .includes(val.toLowerCase());
+        return item[key]?.toLowerCase().includes(val.toLowerCase());
+      })
+    );
+  }, [data, search]);
+
+  const displayedData = useMemo(() => {
+    return rowsPerPage === "all"
+      ? filtered
+      : filtered.slice(0, Number(rowsPerPage));
+  }, [filtered, rowsPerPage]);
 
   return (
     <div className="p-4 rounded-2xl shadow-lg bg-white">
@@ -105,139 +108,126 @@ const TabelJK = () => {
         <table className="min-w-full text-sm text-left rounded-2xl overflow-hidden">
           <thead>
             <tr className="bg-blue-400 text-white text-sm">
-              <th className="px-3 py-2 font-semibold">No</th>
-              <th className="px-3 py-2 font-semibold">
-                Nama
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Masukan Nama"
-                    className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, nama: e.target.value })
-                    }
-                  />
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">
-                Kelas
-                <div>
-                  <input
-                    type="text"
-                    placeholder="XII.2"
-                    className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, kelas: e.target.value })
-                    }
-                  />
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">
-                Tanggal
-                <div>
-                  <input
-                    type="text"
-                    placeholder="dd/mm/yyyy"
-                    className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, tanggalJanji: e.target.value })
-                    }
-                  />
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">
-                Guru BK
-                <div>
-                  <select
-                    className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, guruBK: e.target.value })
-                    }
-                  >
-                    <option value="">Pilih</option>
-                    <option value="Dini-Nursyahida">Dini Nursyahida</option>
-                    <option value="Lina-Erliana">Lina Erliana</option>
-                    <option value="Tari">Tari</option>
-                  </select>
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">
-                Status
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Status"
-                    className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                    onChange={(e) =>
-                      setSearch({ ...search, status: e.target.value })
-                    }
-                  />
-                </div>
-              </th>
-              <th className="px-3 py-2 font-semibold">Jam</th>
-              <th className="px-3 py-2 font-semibold">No. Telp</th>
-              <th className="px-3 py-2 font-semibold">Pesan</th>
-              <th className="px-3 py-2 font-semibold">Aksi</th>
+              {[
+                "No",
+                "Nama",
+                "Kelas",
+                "Tanggal",
+                "Guru BK",
+                "Status",
+                "Jam",
+                "No. Telp",
+                "Pesan",
+                "Aksi",
+              ].map((title, i) => (
+                <th key={i} className="px-3 py-2 font-semibold">
+                  {title}
+                  {["Nama", "Kelas", "Tanggal", "Guru BK", "Status"].includes(
+                    title
+                  ) && (
+                    <div>
+                      {title === "Guru BK" ? (
+                        <select
+                          className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                          onChange={(e) =>
+                            setSearch({
+                              ...search,
+                              guruBK: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Pilih</option>
+                          <option value="Dini-Nursyahida">
+                            Dini Nursyahida
+                          </option>
+                          <option value="Lina-Erliana">Lina Erliana</option>
+                          <option value="Tari">Tari</option>
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder={
+                            title === "Tanggal"
+                              ? "dd/mm/yyyy"
+                              : `Masukan ${title}`
+                          }
+                          className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
+                          onChange={(e) =>
+                            setSearch({
+                              ...search,
+                              [title.toLowerCase().replace(" ", "")]:
+                                e.target.value,
+                            })
+                          }
+                        />
+                      )}
+                    </div>
+                  )}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {displayedData.map((item, idx) => (
-              <tr
-                key={item._id}
-                className="border-b hover:bg-gray-50 transition-colors"
-              >
-                <td className="px-3 py-2">{idx + 1}</td>
-                <td className="px-3 py-2">{item.siswa?.name || "-"}</td>
-                <td className="px-3 py-2">{item.siswa?.kelas || "-"}</td>
-                <td className="px-3 py-2">
-                  {formatTanggal(item.tanggalJanji)}
-                </td>
-                <td className="px-3 py-2">{item.guruBK}</td>
-                <td className="px-3 py-2">
-                  {item.status === "Menunggu" ? (
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() =>
-                          handleStatusUpdate(item._id, "Disetujui")
-                        }
-                        className="bg-green-500 text-white px-2 py-1 rounded-full text-xs"
+            {displayedData.length > 0 ? (
+              displayedData.map((item, idx) => (
+                <tr
+                  key={item._id}
+                  className="border-b hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-3 py-2">{idx + 1}</td>
+                  <td className="px-3 py-2">{item.siswa?.name || "-"}</td>
+                  <td className="px-3 py-2">{item.siswa?.kelas || "-"}</td>
+                  <td className="px-3 py-2">
+                    {formatTanggal(item.tanggalJanji)}
+                  </td>
+                  <td className="px-3 py-2">{item.guruBK}</td>
+                  <td className="px-3 py-2">
+                    {item.status === "Menunggu" ? (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(item._id, "Disetujui")
+                          }
+                          className="bg-green-500 text-white px-2 py-1 rounded-full text-xs"
+                        >
+                          Setujui
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(item._id, "Tidak Disetujui")
+                          }
+                          className="bg-red-500 text-white px-2 py-1 rounded-full text-xs"
+                        >
+                          Tolak
+                        </button>
+                      </div>
+                    ) : (
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs text-white ${
+                          item.status === "Disetujui"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        }`}
                       >
-                        Setujui
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleStatusUpdate(item._id, "Tidak Disetujui")
-                        }
-                        className="bg-red-500 text-white px-2 py-1 rounded-full text-xs"
-                      >
-                        Tolak
-                      </button>
-                    </div>
-                  ) : item.status === "Disetujui" ? (
-                    <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">
-                      Disetujui
-                    </span>
-                  ) : (
-                    <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs">
-                      Tidak Disetujui
-                    </span>
-                  )}
-                </td>
-                <td className="px-3 py-2">{item.waktuJanji}</td>
-                <td className="px-3 py-2">{item.siswa?.noTelp || "-"}</td>
-                <td className="px-3 py-2">{item.keperluan}</td>
-                <td className="px-3 py-2 flex gap-2">
-                  <Link to={`/admin/updatejk/${item._id}`}>
-                    <PencilSquareIcon className="h-5 w-5 text-blue-600 hover:text-blue-800 cursor-pointer" />
-                  </Link>
-                  <TrashIcon
-                    className="h-5 w-5 text-red-600 cursor-pointer"
-                    onClick={() => handleDelete(item._id)}
-                  />
-                </td>
-              </tr>
-            ))}
-            {displayedData.length === 0 && (
+                        {item.status}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">{item.waktuJanji}</td>
+                  <td className="px-3 py-2">{item.siswa?.noTelp || "-"}</td>
+                  <td className="px-3 py-2">{item.keperluan}</td>
+                  <td className="px-3 py-2 flex gap-2">
+                    <Link to={`/admin/updatejk/${item._id}`}>
+                      <PencilSquareIcon className="h-5 w-5 text-blue-600 hover:text-blue-800 cursor-pointer" />
+                    </Link>
+                    <TrashIcon
+                      className="h-5 w-5 text-red-600 cursor-pointer"
+                      onClick={() => handleDelete(item._id)}
+                    />
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={10} className="text-center py-4 text-gray-500">
                   Tidak ada data ditemukan.

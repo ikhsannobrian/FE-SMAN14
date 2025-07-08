@@ -44,3 +44,7 @@ export const getAllAdmin = async () => {
 export const deleteAdmin = async (id) => {
   return api.delete(`/api/auth/admin/${id}`);
 };
+
+export const forgotPassword = (email) => {
+  return axios.post("/api/auth/forgot-password", { email });
+};

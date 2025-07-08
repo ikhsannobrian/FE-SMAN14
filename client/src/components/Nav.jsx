@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo } from "react";
 import Logo from "../assets/logo.png";
 import { Menu, User, LogOut } from "lucide-react";
 import AlertLogout from "./AlertLogout";
@@ -50,6 +50,10 @@ const Nav = ({ isDashboard, onToggleSidebar }) => {
             <img
               src={Logo}
               alt="Logo SMAN 14"
+              loading="eager"
+              decoding="async"
+              width={isDashboard ? 40 : 56}
+              height="auto"
               className={`w-auto ${
                 isDashboard ? "h-8 sm:h-10" : "h-10 sm:h-14"
               }`}
@@ -131,4 +135,4 @@ const Nav = ({ isDashboard, onToggleSidebar }) => {
   );
 };
 
-export default Nav;
+export default memo(Nav);

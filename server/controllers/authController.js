@@ -4,6 +4,10 @@ import User from "../models/User.js";
 import Siswa from "../models/Siswa.js";
 import Admin from "../models/Admin.js";
 import { config } from "../config.js";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
+import dotenv from "dotenv";
+dotenv.config();
 
 // ==================== REGISTER SISWA ====================
 export const registerSiswa = async (req, res) => {
@@ -330,5 +334,76 @@ export const updateAdmin = async (req, res) => {
       message: "Gagal update akun admin",
       error: error.message,
     });
+  }
+};
+
+// ==================== LUPA PASSWORD ====================
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "Email tidak ditemukan" });
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expires = Date.now() + 15 * 60 * 1000; // 15 menit
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = expires;
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetURL = `http://localhost:5173/reset-password/${token}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Reset Password",
+      html: `<p>Klik link berikut untuk mereset password:</p><a href="${resetURL}">${resetURL}</a>`,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Link reset password telah dikirim ke email." });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Gagal mengirim email", error: error.message });
+  }
+};
+
+// ==================== RESET PASSWORD ====================
+export const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user)
+      return res
+        .status(400)
+        .json({ message: "Token tidak valid atau telah kadaluarsa" });
+
+    const hashed = await bcrypt.hash(password, 10);
+    user.password = hashed;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password berhasil direset" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Gagal reset password", error: error.message });
   }
 };

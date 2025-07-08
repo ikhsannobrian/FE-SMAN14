@@ -21,9 +21,16 @@ const userSchema = new mongoose.Schema(
       enum: ["USER", "SISWA", "ADMIN"],
       default: "USER",
     },
+    // ✅ Tambahkan untuk reset password
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
   },
   {
-    timestamps: true, // Automatically manage createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 

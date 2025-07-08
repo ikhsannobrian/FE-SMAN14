@@ -29,6 +29,8 @@ import ProfileView from "./page/ProfileView";
 import AdminList from "./page/AdminListView";
 import StatusKonselingView from "./page/StatusKonselingView";
 import FormUpdateAkunAdmin from "./page/FormUpdateAkunAdmin";
+import ResetPassword from "./page/ResetPassword";
+import ForgotPassword from "./page/ForgotPasswordView";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 const router = createBrowserRouter([
@@ -43,8 +45,24 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
+  },
+  {
     path: "/register",
     element: <FormRegister />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <DashboardView />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/profile",

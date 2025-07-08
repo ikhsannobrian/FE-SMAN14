@@ -6,15 +6,13 @@ export const createNilaiAkademik = async (req, res) => {
   try {
     const { semester1, semester2, semester3, semester4, semester5 } = req.body;
 
-    // 🔎 Cari data siswa berdasarkan ID user yang login
-    const siswa = await Siswa.findOne({ user: req.user.id });
+    const siswa = await Siswa.findOne({ user: req.user.id }); // user.id dari token
     if (!siswa) {
       return res.status(404).json({
         message: "Data siswa tidak ditemukan",
       });
     }
 
-    // Cek apakah siswa sudah pernah input nilai
     const existing = await NilaiAkademik.findOne({ siswa: siswa._id });
     if (existing) {
       return res.status(400).json({
@@ -22,7 +20,6 @@ export const createNilaiAkademik = async (req, res) => {
       });
     }
 
-    //  Hitung rata-rata
     const rataRata = Number(
       (
         (Number(semester1) +
@@ -35,7 +32,7 @@ export const createNilaiAkademik = async (req, res) => {
     );
 
     const nilaiAkademik = new NilaiAkademik({
-      siswa: siswa._id, // ini sekarang benar!
+      siswa: siswa._id,
       semester1,
       semester2,
       semester3,

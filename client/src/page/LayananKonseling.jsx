@@ -4,10 +4,10 @@ import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import CardLayanan from "../components/CardLayanan";
-import Logo8 from "../assets/logo8.png";
-import Logo13 from "../assets/logo13.jpg";
-import Logo15 from "../assets/logo15.jpg";
-import Logo16 from "../assets/logo16.png";
+import Logo8 from "../assets/logo8.webp";
+import Logo13 from "../assets/logo13.webp";
+import Logo15 from "../assets/logo15.webp";
+import Logo16 from "../assets/logo16.webp";
 
 const cardData = [
   {

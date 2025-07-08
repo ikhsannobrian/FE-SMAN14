@@ -1,4 +1,4 @@
-import Logo from "../assets/logo.png";
+import Logo from "../assets/logo.webp";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { login } from "../../service/authService";
@@ -15,12 +15,9 @@ const FormLogin = () => {
       const res = await login(email, password);
       const { token, user } = res.data;
 
-      console.log("User login:", user);
-
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // redirect ke halaman dashboard atau sesuai role
       if (user.role.toLowerCase() === "admin") {
         navigate("/admin/dashboard");
       } else {
@@ -59,7 +56,6 @@ const FormLogin = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              // required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
@@ -78,9 +74,16 @@ const FormLogin = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              // required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
+            <div className="text-right mt-1">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-500 hover:underline"
+              >
+                Lupa password?
+              </Link>
+            </div>
           </div>
 
           {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
@@ -102,7 +105,14 @@ const FormLogin = () => {
       </div>
 
       <div className="w-full max-w-sm mt-6 md:mt-0">
-        <img src={Logo} alt="Logo SMAN 14" className="w-full h-auto" />
+        <img
+          src={Logo}
+          alt="Logo SMAN 14"
+          width={500}
+          height={400}
+          loading="lazy"
+          className="rounded-xl mx-auto"
+        />
       </div>
     </div>
   );

@@ -26,29 +26,29 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
 
   // Ambil user dari localStorage
   const user = JSON.parse(localStorage.getItem("user"));
-  const userId = user?._id;
+  const siswaId = user?.siswaId;
 
-  // Fetch siswaId berdasarkan user login
   useEffect(() => {
     const fetchSiswa = async () => {
+      if (!siswaId) return;
+
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/auth/siswa/${userId}`
+          `http://localhost:5000/api/auth/siswa/${siswaId}`
         );
         setFormData((prev) => ({ ...prev, siswa: res.data._id }));
-      } catch (error) {
-        console.error("Gagal ambil siswa:", error);
+      } catch {
+        // Jangan tampilkan error ke console
       }
     };
 
     if (!isUpdate && user?.role === "SISWA") {
       fetchSiswa();
     }
-  }, [userId, isUpdate]);
+  }, [siswaId, isUpdate, user?.role]);
 
-  // Isi nilai lama jika update
   useEffect(() => {
-    if (initialData) {
+    if (initialData && Object.keys(initialData).length > 0) {
       setFormData((prev) => ({
         ...prev,
         ...initialData,
@@ -76,8 +76,6 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
     try {
       if (onSubmit) {
         await onSubmit(dataSiapKirim);
-
-        // ✅ Tampilkan alert sukses
         setAlertData({
           type: "success",
           title: isUpdate ? "Data Diperbarui" : "Berhasil",
@@ -88,18 +86,23 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
         setAlertVisible(true);
       }
     } catch (error) {
-      const errorMsg = error?.response?.data?.message || "";
+      const errorMsg = error?.response?.data?.message?.toLowerCase() || "";
 
-      // ❌ Tampilkan alert gagal
-      setAlertData({
-        type: "error",
-        title: "Gagal",
-        message:
-          errorMsg.includes("duplicate") ||
-          errorMsg.toLowerCase().includes("sudah pernah")
-            ? "Anda sudah pernah mengumpulkan nilai."
-            : "Terjadi kesalahan saat mengirim data.",
-      });
+      if (errorMsg.includes("sudah")) {
+        setAlertData({
+          type: "error",
+          title: "Sudah Pernah Mengisi",
+          message:
+            "Anda sudah pernah mengumpulkan nilai. Jika ingin mengubah, silakan hubungi admin.",
+        });
+      } else {
+        setAlertData({
+          type: "error",
+          title: "Gagal",
+          message: "Terjadi kesalahan saat mengirim data.",
+        });
+      }
+
       setAlertVisible(true);
     }
   };

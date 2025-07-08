@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
       manifest: {
-        name: "Sistem Informasi Manajemen",
-        short_name: "SIM SMA",
+        name: "Sistem Informasi Manajemen SMAN 14 Bekasi",
+        short_name: "SIMS BK SMAN 14 Bekasi",
         description: "Aplikasi Sistem Informasi Manajemen SMAN 14 Bekasi",
         theme_color: "#ffffff",
         icons: [
