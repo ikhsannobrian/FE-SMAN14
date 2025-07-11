@@ -16,12 +16,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(
-  cors({
-    origin: "https://sims14bekasi.vercel.app",
-    credentials: true,
-  })
-);
+app.use(cors());
 app.use(express.json());
 
 // API Routes

@@ -34,7 +34,7 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
 
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/auth/siswa/${siswaId}`
+          `http://localhost:5000/api/auth/siswa/${siswaId}`
         );
         setFormData((prev) => ({ ...prev, siswa: res.data._id }));
       } catch {
