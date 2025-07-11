@@ -17,13 +17,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // app.use(cors());
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://fe-sman14.railway.app"
-];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
+  console.log("CORS for:", origin);
+
+  const allowedOrigins = [
+  "http://localhost:5173",
+  "https://fe-sman14.railway.app"
+];
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
