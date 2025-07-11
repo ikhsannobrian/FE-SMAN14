@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "fe-sman14-production.up.railway.app",
 });
 
 // ⬇️ Tambahkan interceptor untuk otomatis menyisipkan token
