@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://fe-sman14.vercel.app",          // ganti sesuai domain FE jika pakai Vercel
+  "https://sman14.vercel.app",          // ganti sesuai domain FE jika pakai Vercel
   "https://fe-sman14-production.up.railway.app"       
 ];
 
