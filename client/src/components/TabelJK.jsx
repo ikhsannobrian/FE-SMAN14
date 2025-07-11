@@ -60,20 +60,31 @@ const TabelJK = () => {
   }, []);
 
   const filtered = useMemo(() => {
-    return data.filter((item) =>
-      Object.entries(search).every(([key, val]) => {
-        if (!val) return true;
-        if (key === "nama")
-          return item.siswa?.name?.toLowerCase().includes(val.toLowerCase());
-        if (key === "kelas")
-          return item.siswa?.kelas?.toLowerCase().includes(val.toLowerCase());
-        if (key === "tanggalJanji")
-          return formatTanggal(item.tanggalJanji)
-            .toLowerCase()
-            .includes(val.toLowerCase());
-        return item[key]?.toLowerCase().includes(val.toLowerCase());
-      })
-    );
+    return data.filter((item) => {
+      const namaMatch = search.nama
+        ? item.siswa?.name?.toLowerCase().includes(search.nama.toLowerCase())
+        : true;
+
+      const kelasMatch = search.kelas
+        ? item.siswa?.kelas?.toLowerCase().includes(search.kelas.toLowerCase())
+        : true;
+
+      const tanggalMatch = search.tanggalJanji
+        ? formatTanggal(item.tanggalJanji).includes(search.tanggalJanji)
+        : true;
+
+      const guruBKMatch = search.guruBK
+        ? item.guruBK?.toLowerCase().includes(search.guruBK.toLowerCase())
+        : true;
+
+      const statusMatch = search.status
+        ? item.status?.toLowerCase() === search.status.toLowerCase()
+        : true;
+
+      return (
+        namaMatch && kelasMatch && tanggalMatch && guruBKMatch && statusMatch
+      );
+    });
   }, [data, search]);
 
   const displayedData = useMemo(() => {
@@ -108,63 +119,75 @@ const TabelJK = () => {
         <table className="min-w-full text-sm text-left rounded-2xl overflow-hidden">
           <thead>
             <tr className="bg-blue-400 text-white text-sm">
-              {[
-                "No",
-                "Nama",
-                "Kelas",
-                "Tanggal",
-                "Guru BK",
-                "Status",
-                "Jam",
-                "No. Telp",
-                "Pesan",
-                "Aksi",
-              ].map((title, i) => (
-                <th key={i} className="px-3 py-2 font-semibold">
-                  {title}
-                  {["Nama", "Kelas", "Tanggal", "Guru BK", "Status"].includes(
-                    title
-                  ) && (
-                    <div>
-                      {title === "Guru BK" ? (
-                        <select
-                          className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                          onChange={(e) =>
-                            setSearch({
-                              ...search,
-                              guruBK: e.target.value,
-                            })
-                          }
-                        >
-                          <option value="">Pilih</option>
-                          <option value="Dini-Nursyahida">
-                            Dini Nursyahida
-                          </option>
-                          <option value="Lina-Erliana">Lina Erliana</option>
-                          <option value="Tari">Tari</option>
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          placeholder={
-                            title === "Tanggal"
-                              ? "dd/mm/yyyy"
-                              : `Masukan ${title}`
-                          }
-                          className="w-24 mt-1 px-2 py-1 text-xs rounded bg-white text-black focus:outline-none"
-                          onChange={(e) =>
-                            setSearch({
-                              ...search,
-                              [title.toLowerCase().replace(" ", "")]:
-                                e.target.value,
-                            })
-                          }
-                        />
-                      )}
-                    </div>
-                  )}
-                </th>
-              ))}
+              <th className="px-3 py-2 font-semibold">No</th>
+              <th className="px-3 py-2 font-semibold">
+                Nama
+                <input
+                  type="text"
+                  className="w-full mt-1 px-2 py-1 text-xs rounded text-black"
+                  placeholder="Cari nama"
+                  onChange={(e) =>
+                    setSearch((prev) => ({ ...prev, nama: e.target.value }))
+                  }
+                />
+              </th>
+              <th className="px-3 py-2 font-semibold">
+                Kelas
+                <input
+                  type="text"
+                  className="w-full mt-1 px-2 py-1 text-xs rounded text-black"
+                  placeholder="Cari kelas"
+                  onChange={(e) =>
+                    setSearch((prev) => ({ ...prev, kelas: e.target.value }))
+                  }
+                />
+              </th>
+              <th className="px-3 py-2 font-semibold">
+                Tanggal
+                <input
+                  type="text"
+                  className="w-full mt-1 px-2 py-1 text-xs rounded text-black"
+                  placeholder="dd/mm/yyyy"
+                  onChange={(e) =>
+                    setSearch((prev) => ({
+                      ...prev,
+                      tanggalJanji: e.target.value,
+                    }))
+                  }
+                />
+              </th>
+              <th className="px-3 py-2 font-semibold">
+                Guru BK
+                <select
+                  className="w-full mt-1 px-2 py-1 text-xs rounded text-black"
+                  onChange={(e) =>
+                    setSearch((prev) => ({ ...prev, guruBK: e.target.value }))
+                  }
+                >
+                  <option value="">Semua</option>
+                  <option value="Dini Nursyahida">Dini Nursyahida</option>
+                  <option value="Lina Erliana">Lina Erliana</option>
+                  <option value="Tari">Tari</option>
+                </select>
+              </th>
+              <th className="px-3 py-2 font-semibold">
+                Status
+                <select
+                  className="w-full mt-1 px-2 py-1 text-xs rounded text-black"
+                  onChange={(e) =>
+                    setSearch((prev) => ({ ...prev, status: e.target.value }))
+                  }
+                >
+                  <option value="">Semua</option>
+                  <option value="Menunggu">Menunggu</option>
+                  <option value="Disetujui">Disetujui</option>
+                  <option value="Tidak Disetujui">Tidak Disetujui</option>
+                </select>
+              </th>
+              <th className="px-3 py-2 font-semibold">Jam</th>
+              <th className="px-3 py-2 font-semibold">No. Telp</th>
+              <th className="px-3 py-2 font-semibold">Pesan</th>
+              <th className="px-3 py-2 font-semibold">Aksi</th>
             </tr>
           </thead>
           <tbody>

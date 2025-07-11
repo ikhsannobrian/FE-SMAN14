@@ -57,9 +57,22 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation: make sure semua field diisi
-    if (!formData.tanggalJanji || !formData.waktuJanji || !formData.guruBK || !formData.keperluan) {
-      setFormError("Semua field harus diisi.");
+    // Validasi semua field wajib diisi
+    const { tanggalJanji, waktuJanji, guruBK, keperluan } = formData;
+
+    if (
+      tanggalJanji.trim() === "" ||
+      waktuJanji.trim() === "" ||
+      guruBK.trim() === "" ||
+      keperluan.trim() === ""
+    ) {
+      setFormError("Semua field wajib diisi.");
+      return;
+    }
+
+    // Jika mode update, status juga wajib diisi
+    if (isUpdate && formData.status.trim() === "") {
+      setFormError("Status wajib diisi.");
       return;
     }
 
@@ -125,9 +138,11 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
             type="date"
             name="tanggalJanji"
             value={formData.tanggalJanji}
-            min={new Date(Date.now() + 24 * 60 * 60 * 1000)
-              .toISOString()
-              .split("T")[0]}
+            min={
+              new Date(Date.now() + 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0]
+            }
             onChange={(e) => {
               const selectedDate = new Date(e.target.value);
               const day = selectedDate.getDay();
