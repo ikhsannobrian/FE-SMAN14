@@ -17,13 +17,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // app.use(cors());
-app.use(cors({
-  origin: [
-    "http://localhost:5173",             // untuk development
-    "https://fe-sman14.railway.app"      // frontend deploy di Railway
-  ],
-  credentials: true                     
-}));
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://fe-sman14.railway.app"
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+
+  // Untuk menangani preflight request langsung
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 app.use(express.json());
 
 // API Routes
