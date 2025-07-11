@@ -29,7 +29,7 @@ const ResetPassword = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/auth/reset-password/${token}`,
+        `http://localhost:8080/api/auth/reset-password/${token}`,
         {
           password,
         }
