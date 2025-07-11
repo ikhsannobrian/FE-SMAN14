@@ -120,24 +120,29 @@ const TabelPelanggaran = () => {
 
   return (
     <div className="p-4 rounded-2xl shadow-lg bg-white">
-      <div className="flex justify-between items-center mb-2">
+      {/* Header & Filter Responsive */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
         <h1 className="text-2xl font-bold">Pelanggaran Siswa</h1>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">Show</label>
-          <select
-            value={rowsPerPage}
-            onChange={(e) => setRowsPerPage(e.target.value)}
-            className="border px-2 py-1 rounded text-sm"
-          >
-            <option value={10}>10</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-            <option value="all">All</option>
-          </select>
+
+        <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
+          <div className="flex items-center gap-1">
+            <label className="text-sm font-medium">Show</label>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => setRowsPerPage(e.target.value)}
+              className="border px-2 py-1 rounded text-sm w-full md:w-auto min-w-[80px]"
+            >
+              <option value={10}>10</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value="all">All</option>
+            </select>
+          </div>
+
           <select
             value={bulan}
             onChange={(e) => setBulan(e.target.value)}
-            className="border px-2 py-1 rounded text-sm"
+            className="border px-2 py-1 rounded text-sm w-full md:w-auto min-w-[130px]"
           >
             {Array.from({ length: 12 }, (_, i) => (
               <option key={i + 1} value={i + 1}>
@@ -145,10 +150,11 @@ const TabelPelanggaran = () => {
               </option>
             ))}
           </select>
+
           <select
             value={tahun}
             onChange={(e) => setTahun(e.target.value)}
-            className="border px-2 py-1 rounded text-sm"
+            className="border px-2 py-1 rounded text-sm w-full md:w-auto min-w-[100px]"
           >
             {[2023, 2024, 2025].map((y) => (
               <option key={y} value={y}>
@@ -156,9 +162,10 @@ const TabelPelanggaran = () => {
               </option>
             ))}
           </select>
+
           <button
             onClick={handleRekap}
-            className="px-4 py-1 rounded text-white"
+            className="px-4 py-1 rounded text-white w-full md:w-auto"
             style={{ backgroundColor: "#3b82f6" }}
           >
             Rekap
@@ -166,7 +173,7 @@ const TabelPelanggaran = () => {
         </div>
       </div>
 
-      {/* ...tabel utama */}
+      {/* Tabel Utama */}
       <div className="overflow-x-auto rounded-2xl border border-gray-200">
         <table className="min-w-full text-sm text-left rounded-2xl overflow-hidden">
           <thead>
@@ -264,7 +271,7 @@ const TabelPelanggaran = () => {
         </table>
       </div>
 
-      {/* Modal rekap */}
+      {/* Modal Rekap */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
           <div
