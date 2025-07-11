@@ -4,7 +4,6 @@
   "description": "��#\u0000 \u0000F\u0000E\u0000-\u0000S\u0000M\u0000A\u0000N\u00001\u00004\u0000\r\u0000 \u0000",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "npm run dev --prefix server",
     "client": "npm run dev --prefix client",
