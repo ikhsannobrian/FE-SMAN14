@@ -29,11 +29,12 @@ const ResetPassword = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/auth/reset-password/${token}`,
+        `${import.meta.env.VITE_API_URL}/api/auth/reset-password/${token}`,
         {
           password,
         }
       );
+
       setSuccess(true);
       setMessage("Password berhasil direset!");
       setTimeout(() => navigate("/"), 2000); // Redirect ke login setelah 2 detik
