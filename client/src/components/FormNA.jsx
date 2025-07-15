@@ -33,9 +33,7 @@ const FormNA = ({ initialData = {}, onSubmit }) => {
       if (!siswaId) return;
 
       try {
-        const res = await axios.get(
-          `http://localhost:5000/api/auth/siswa/${siswaId}`
-        );
+        const res = await api.get(`/api/auth/siswa/${user.siswaId}`);
         setFormData((prev) => ({ ...prev, siswa: res.data._id }));
       } catch {
         // Jangan tampilkan error ke console

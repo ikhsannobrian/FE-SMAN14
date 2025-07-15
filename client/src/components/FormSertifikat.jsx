@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "./Alert";
 import { createSertifikat } from "../../service/sertifikat";
-import axios from "axios";
+import { api } from "../../service/api"; // ✅ Ganti axios ke api instance
 
 const FormSertifikat = ({ initialData = {}, onSubmit }) => {
   const location = useLocation();
@@ -23,16 +23,14 @@ const FormSertifikat = ({ initialData = {}, onSubmit }) => {
   const [error, setError] = useState(null);
   const [siswaId, setSiswaId] = useState("");
 
-  // Ambil siswaId hanya jika BUKAN update
+  // ✅ Ambil siswaId dari server jika bukan mode update
   useEffect(() => {
     const fetchSiswaId = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
         if (!user?.siswaId) return;
 
-        const res = await axios.get(
-          `http://localhost:5000/api/auth/siswa/${user.siswaId}`
-        );
+        const res = await api.get(`/api/auth/siswa/${user.siswaId}`);
         setSiswaId(res.data._id);
       } catch (err) {
         console.error("Gagal mengambil siswaId:", err);

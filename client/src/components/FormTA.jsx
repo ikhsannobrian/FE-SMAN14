@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios"; // ✅ pastikan axios diimport
 import Alert from "./Alert";
 import { createTracerAlumni } from "../../service/tracerAlumni";
+import { api } from "../../service/api";
 
 const FormTA = ({ initialData = {}, onSubmit = createTracerAlumni }) => {
   const location = useLocation();
@@ -31,9 +32,7 @@ const FormTA = ({ initialData = {}, onSubmit = createTracerAlumni }) => {
       console.log("User dari localStorage:", user);
       try {
         if (!isUpdate && user?.role === "SISWA") {
-          const res = await axios.get(
-            `http://localhost:5000/api/auth/siswa/${user.siswaId}`
-          );
+          const res = await api.get(`/api/auth/siswa/${user.siswaId}`);
           setSiswa(res.data);
           setFormData((prev) => ({
             ...prev,
