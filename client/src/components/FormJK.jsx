@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "./Alert";
 import { createJanjiKonseling } from "../../service/janjianKonselingService";
 import axios from "axios";
+import { api } from "../../service/api"; // Import API instance
 
 const FormJK = ({ initialData = {}, onSubmit }) => {
   const location = useLocation();
@@ -26,9 +27,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
       try {
         if (!isUpdate) {
           const user = JSON.parse(localStorage.getItem("user"));
-          const res = await axios.get(
-            `http://localhost:5000/api/auth/siswa/${user.siswaId}`
-          );
+          const res = await api.get(`/api/auth/siswa/${user.siswaId}`);
           setSiswaId(res.data._id);
         } else {
           const siswa = initialData?.siswa?._id || initialData?.siswa || null;
