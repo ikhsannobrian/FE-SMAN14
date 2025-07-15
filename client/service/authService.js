@@ -46,5 +46,5 @@ export const deleteAdmin = async (id) => {
 };
 
 export const forgotPassword = (email) => {
-  return axios.post("/api/auth/forgot-password", { email });
+  return api.post("/api/auth/forgot-password", { email });
 };
