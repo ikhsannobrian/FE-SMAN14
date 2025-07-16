@@ -5,6 +5,7 @@ import {
   updateJanjiKonseling,
   deleteJanjiKonseling,
   getAllJanjiKonseling,
+  getJamTersedia,
   updateStatusJanjiKonseling,
   getJanjiKonselingBySiswaLogin,
 } from "../controllers/janjiKonselingController.js";
@@ -15,6 +16,8 @@ import {
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+router.get("/jam-tersedia", authMiddleware, siswaMiddleware, getJamTersedia);
 
 router.get(
   "/siswa",

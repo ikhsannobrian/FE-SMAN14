@@ -32,3 +32,10 @@ export const getJanjiKonselingBySiswaLogin = async () => {
   const response = await api.get("/api/janjiKonseling/siswa");
   return response.data.data;
 };
+
+export const getJamTersedia = async (tanggal) => {
+  const response = await api.get(
+    `/api/janjiKonseling/jam-tersedia?tanggal=${tanggal}`
+  );
+  return response.data.jamTersedia;
+};

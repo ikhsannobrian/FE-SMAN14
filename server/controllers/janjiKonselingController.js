@@ -1,5 +1,8 @@
 import janjiKonseling from "../models/janjiKonseling.js";
 import Siswa from "../models/Siswa.js";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+dayjs.extend(customParseFormat);
 
 // Get all
 export const getAllJanjiKonseling = async (req, res) => {
@@ -18,9 +21,26 @@ export const createJanjiKonseling = async (req, res) => {
   try {
     const { siswa, tanggalJanji, waktuJanji, guruBK, keperluan } = req.body;
 
+    // Format tanggal ke dd-MM-YYYY
+    const formattedDate = dayjs(tanggalJanji, [
+      "YYYY-MM-DD",
+      "DD-MM-YYYY",
+    ]).format("DD-MM-YYYY");
+
+    const existing = await janjiKonseling.findOne({
+      tanggalJanji: formattedDate,
+      waktuJanji,
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: `Jam ${waktuJanji} pada tanggal ${formattedDate} sudah dibooking`,
+      });
+    }
+
     const newJanji = new janjiKonseling({
       siswa,
-      tanggalJanji,
+      tanggalJanji: formattedDate,
       waktuJanji,
       guruBK,
       keperluan,
@@ -55,13 +75,22 @@ export const getJanjiKonselingById = async (req, res) => {
 // Update
 export const updateJanjiKonseling = async (req, res) => {
   try {
+    if (req.body.tanggalJanji) {
+      req.body.tanggalJanji = dayjs(req.body.tanggalJanji, [
+        "YYYY-MM-DD",
+        "DD-MM-YYYY",
+      ]).format("DD-MM-YYYY");
+    }
+
     const updated = await janjiKonseling.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
+
     if (!updated)
       return res.status(404).json({ message: "Data tidak ditemukan" });
+
     res.json({
       message: "Berhasil merubah data janjian konseling",
       data: updated,
@@ -108,20 +137,18 @@ export const updateStatusJanjiKonseling = async (req, res) => {
   }
 };
 
+// Get by siswa login
 export const getJanjiKonselingBySiswaLogin = async (req, res) => {
   try {
-    const userId = req.user.id; // ← ini ID dari User login
-
-    // Cari siswa berdasarkan user ID
+    const userId = req.user.id;
     const siswa = await Siswa.findOne({ user: userId });
 
     if (!siswa) {
       return res.status(404).json({ message: "Data siswa tidak ditemukan" });
     }
 
-    // Ambil janji konseling berdasarkan siswa._id
     const data = await janjiKonseling
-      .find({ siswa: siswa._id }) // ← yang benar ini
+      .find({ siswa: siswa._id })
       .sort({ tanggalJanji: -1 })
       .populate("siswa", "name kelas noTelp");
 
@@ -131,5 +158,44 @@ export const getJanjiKonselingBySiswaLogin = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Terjadi kesalahan", error: err.message });
+  }
+};
+
+// Get jam tersedia
+export const getJamTersedia = async (req, res) => {
+  try {
+    const { tanggal } = req.query;
+
+    if (!tanggal) {
+      return res.status(400).json({ message: "Tanggal wajib diisi" });
+    }
+
+    const formatted = dayjs(tanggal, ["YYYY-MM-DD", "DD-MM-YYYY"]).format(
+      "DD-MM-YYYY"
+    );
+
+    const semuaJam = [
+      "08:00",
+      "09:00",
+      "10:00",
+      "11:00",
+      "13:00",
+      "14:00",
+      "15:00",
+    ];
+
+    const existing = await janjiKonseling.find({ tanggalJanji: formatted });
+    const jamTerbooking = existing.map((item) => item.waktuJanji);
+    const jamTersedia = semuaJam.filter((jam) => !jamTerbooking.includes(jam));
+
+    res.status(200).json({
+      tanggal: formatted,
+      jamTersedia,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Gagal mengambil jam tersedia",
+      error: err.message,
+    });
   }
 };

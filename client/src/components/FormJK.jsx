@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Alert from "./Alert";
-import { createJanjiKonseling } from "../../service/janjianKonselingService";
-import axios from "axios";
-import { api } from "../../service/api"; // Import API instance
+import dayjs from "dayjs";
+import {
+  createJanjiKonseling,
+  getJamTersedia,
+} from "../../service/janjianKonselingService";
+import { api } from "../../service/api";
+
+const semuaJam = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "13:00",
+  "14:00",
+  "15:00",
+];
 
 const FormJK = ({ initialData = {}, onSubmit }) => {
   const location = useLocation();
@@ -15,12 +28,13 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
     waktuJanji: "",
     guruBK: "",
     keperluan: "",
-    status: "", // ✅ Tambahkan status ke formData
+    status: "",
   });
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [siswaId, setSiswaId] = useState("");
-  const [formError, setFormError] = useState(""); // nampung error form
+  const [formError, setFormError] = useState("");
+  const [jamTersedia, setJamTersedia] = useState([]);
 
   useEffect(() => {
     const fetchSiswaId = async () => {
@@ -48,7 +62,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
         waktuJanji: initialData.waktuJanji || "",
         guruBK: initialData.guruBK || "",
         keperluan: initialData.keperluan || "",
-        status: initialData.status || "", // ✅ Inisialisasi status dari data awal
+        status: initialData.status || "",
       });
     }
   }, [initialData, isUpdate]);
@@ -56,7 +70,6 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasi semua field wajib diisi
     const { tanggalJanji, waktuJanji, guruBK, keperluan } = formData;
 
     if (
@@ -69,7 +82,6 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
       return;
     }
 
-    // Jika mode update, status juga wajib diisi
     if (isUpdate && formData.status.trim() === "") {
       setFormError("Status wajib diisi.");
       return;
@@ -80,6 +92,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
       const payload = {
         siswa: siswaId,
         ...formData,
+        tanggalJanji: dayjs(formData.tanggalJanji).format("DD-MM-YYYY"),
       };
 
       await onSubmit(payload);
@@ -96,6 +109,29 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleTanggalChange = async (e) => {
+    const selectedDate = new Date(e.target.value);
+    const day = selectedDate.getDay();
+
+    if (day === 0 || day === 6) {
+      alert("Hanya bisa memilih hari kerja (Senin - Jumat)");
+      return;
+    }
+
+    handleChange(e);
+
+    try {
+      const jam = await getJamTersedia(
+        dayjs(e.target.value).format("DD-MM-YYYY")
+      );
+      setJamTersedia(jam);
+      setFormData((prev) => ({ ...prev, waktuJanji: "" }));
+    } catch (err) {
+      console.error("Gagal mengambil jam tersedia:", err);
+      setJamTersedia([]);
+    }
   };
 
   const handleAlertClose = () => {
@@ -130,7 +166,6 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-8 bg-white rounded-lg shadow-md space-y-6"
       >
-        {/* Tanggal */}
         <div>
           <label className="block text-sm font-medium mb-5">Tanggal</label>
           <input
@@ -142,38 +177,41 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
                 .toISOString()
                 .split("T")[0]
             }
-            onChange={(e) => {
-              const selectedDate = new Date(e.target.value);
-              const day = selectedDate.getDay();
-              // 0 = Sunday, 6 = Saturday
-              if (day === 0 || day === 6) {
-                alert("Hanya bisa memilih hari kerja (Senin - Jumat)");
-                return;
-              }
-              handleChange(e);
-            }}
+            onChange={handleTanggalChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        {/* Jam */}
         <div>
           <label className="block text-sm font-medium mb-2">Jam</label>
-          <input
-            type="time"
-            name="waktuJanji"
-            value={formData.waktuJanji}
-            onChange={handleChange}
-            min="07:00"
-            max="16:00"
-            className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
-          />
-          <small className="text-gray-500">
-            Pilih waktu antara 07:00 dan 16:00 (interval 15 menit)
-          </small>
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            {semuaJam.map((jam) => (
+              <button
+                key={jam}
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({ ...prev, waktuJanji: jam }))
+                }
+                disabled={!jamTersedia.includes(jam)}
+                className={`p-2 rounded text-sm ${
+                  formData.waktuJanji === jam
+                    ? "bg-blue-500 text-white"
+                    : jamTersedia.includes(jam)
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                {jam}
+              </button>
+            ))}
+          </div>
+          {formData.tanggalJanji && jamTersedia.length === 0 && (
+            <p className="text-sm text-red-500 mt-2">
+              Tidak ada jam tersedia untuk tanggal ini.
+            </p>
+          )}
         </div>
 
-        {/* Guru BK */}
         <div>
           <label className="block text-sm font-medium mb-5">Guru BK</label>
           <select
@@ -191,7 +229,6 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
           </select>
         </div>
 
-        {/* Pesan */}
         <div>
           <label className="block text-sm font-medium mb-5">
             Pesan (Keluhan)
@@ -206,7 +243,6 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
           ></textarea>
         </div>
 
-        {/* ✅ Status hanya ditampilkan saat update */}
         {isUpdate && (
           <div>
             <label className="block text-sm font-medium mb-5">Status</label>
@@ -223,12 +259,10 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
           </div>
         )}
 
-        {/* Error message */}
         {formError && (
           <div className="text-red-500 text-sm mb-2">{formError}</div>
         )}
 
-        {/* Navigasi dan Submit */}
         <div className="text-right">
           <Link
             to={isUpdate ? "/admin/tabeljk" : "/layanan-konseling"}
