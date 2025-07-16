@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { getJanjiKonselingBySiswaLogin } from "../../service/janjianKonselingService";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
 
 // Format tanggal
 const formatTanggal = (tanggal) => {
-  const date = new Date(tanggal);
-  return new Intl.DateTimeFormat("id-ID").format(date);
+  const parsed = dayjs(
+    tanggal,
+    ["YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY"],
+    true
+  );
+  return parsed.isValid() ? parsed.format("DD-MM-YYYY") : "Tanggal tidak valid";
 };
-
 const StatusKonseling = () => {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState({
