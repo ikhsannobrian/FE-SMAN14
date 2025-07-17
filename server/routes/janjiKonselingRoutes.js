@@ -17,13 +17,7 @@ import {
 
 const router = express.Router();
 
-router.get(
-  "/jam-tersedia",
-  authMiddleware,
-  siswaMiddleware,
-  adminMiddleware,
-  getJamTersedia
-);
+router.get("/jam-tersedia", authMiddleware, getJamTersedia);
 
 router.get(
   "/siswa",

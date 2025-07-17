@@ -174,11 +174,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
             type="date"
             name="tanggalJanji"
             value={formData.tanggalJanji}
-            min={
-              new Date(Date.now() + 24 * 60 * 60 * 1000)
-                .toISOString()
-                .split("T")[0]
-            }
+            min={dayjs().add(1, "day").format("YYYY-MM-DD")}
             onChange={handleTanggalChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
           />
