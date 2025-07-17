@@ -58,7 +58,9 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
   useEffect(() => {
     if (isUpdate && initialData) {
       setFormData({
-        tanggalJanji: initialData.tanggalJanji || "",
+        tanggalJanji: initialData.tanggalJanji
+          ? dayjs(initialData.tanggalJanji, "DD-MM-YYYY").format("YYYY-MM-DD")
+          : "",
         waktuJanji: initialData.waktuJanji || "",
         guruBK: initialData.guruBK || "",
         keperluan: initialData.keperluan || "",
