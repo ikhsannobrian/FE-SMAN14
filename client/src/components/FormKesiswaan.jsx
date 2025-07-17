@@ -49,9 +49,8 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
     e.preventDefault();
 
     if (isEdit && typeof initialData._id !== "undefined") {
-      // Mode update
       try {
-        await onSubmit(formData); // onSubmit dari parent (FormUpdateKesiswaan)
+        await onSubmit(formData);
         setAlertMessage("Data pelanggaran berhasil diperbarui!");
         setShowAlert(true);
       } catch (err) {
@@ -60,7 +59,6 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
         setShowAlert(true);
       }
     } else {
-      // Mode create
       try {
         const user = JSON.parse(localStorage.getItem("user"));
         const adminId = user?.id || user?._id;
