@@ -32,9 +32,9 @@ const FormUpdateKesiswaan = () => {
   const handleUpdate = async (updatedData) => {
     try {
       await updatePelanggaranSiswa(id, updatedData);
-      navigate("/admin/tabelpelanggaran");
     } catch (error) {
       console.error("Gagal mengupdate data:", error);
+      throw error;
     }
   };
 

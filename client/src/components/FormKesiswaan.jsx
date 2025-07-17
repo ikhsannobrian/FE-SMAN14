@@ -17,6 +17,7 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
 
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState("success");
 
   useEffect(() => {
     if (isEdit && initialData && Object.keys(initialData).length > 0) {
@@ -52,10 +53,12 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
       try {
         await onSubmit(formData);
         setAlertMessage("Data pelanggaran berhasil diperbarui!");
+        setAlertType("success");
         setShowAlert(true);
       } catch (err) {
         console.error("Gagal memperbarui data pelanggaran:", err);
         setAlertMessage("Gagal memperbarui data pelanggaran.");
+        setAlertType("error");
         setShowAlert(true);
       }
     } else {
@@ -76,25 +79,26 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
 
         await createPelanggaranSiswa(payload);
         setAlertMessage("Data pelanggaran berhasil ditambahkan!");
+        setAlertType("success");
         setShowAlert(true);
       } catch (err) {
         console.error("Gagal submit data pelanggaran:", err);
         setAlertMessage("Gagal menambahkan data pelanggaran.");
+        setAlertType("error");
         setShowAlert(true);
       }
     }
   };
-
   const handleCloseAlert = () => {
     setShowAlert(false);
-    navigate("/admin/formkesiswaan");
+    navigate("/admin/tabelpelanggaran"); // halaman tujuan setelah update
   };
 
   return (
     <div className="py-6 px-4 bg-gray-50">
       {showAlert && (
         <Alert
-          type="success"
+          type={alertType}
           message={alertMessage}
           onClose={handleCloseAlert}
           showCloseButton={true}
@@ -115,7 +119,6 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
             type="text"
             name="nama"
             placeholder="Anisa Rahmah Kusuma"
-            required
             value={formData.nama}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -128,7 +131,6 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
             type="text"
             placeholder="12.5"
             name="kelas"
-            required
             value={formData.kelas}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -142,7 +144,6 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
           <input
             type="date"
             name="tanggal"
-            required
             value={formData.tanggal}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -153,7 +154,6 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
           <label className="block text-sm font-medium mb-2">Pelanggaran</label>
           <select
             name="pelanggaran"
-            required
             value={formData.pelanggaran}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -173,7 +173,6 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
             type="text"
             placeholder="Atribut tidak lengkap"
             name="penjelasan"
-            required
             value={formData.penjelasan}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
