@@ -126,7 +126,7 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
 
     try {
       const jam = await getJamTersedia(
-        dayjs(e.target.value).format("DD-MM-YYYY")
+        dayjs(e.target.value).format("YYYY-MM-DD")
       );
       setJamTersedia(jam);
       setFormData((prev) => ({ ...prev, waktuJanji: "" }));
