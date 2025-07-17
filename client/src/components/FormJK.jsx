@@ -57,15 +57,24 @@ const FormJK = ({ initialData = {}, onSubmit }) => {
 
   useEffect(() => {
     if (isUpdate && initialData) {
+      const formattedDate = initialData.tanggalJanji
+        ? dayjs(initialData.tanggalJanji, "DD-MM-YYYY").format("YYYY-MM-DD")
+        : "";
+
       setFormData({
-        tanggalJanji: initialData.tanggalJanji
-          ? dayjs(initialData.tanggalJanji, "DD-MM-YYYY").format("YYYY-MM-DD")
-          : "",
+        tanggalJanji: formattedDate,
         waktuJanji: initialData.waktuJanji || "",
         guruBK: initialData.guruBK || "",
         keperluan: initialData.keperluan || "",
         status: initialData.status || "",
       });
+
+      // Panggil jam tersedia saat form update dibuka
+      if (formattedDate) {
+        getJamTersedia(formattedDate).then((res) => {
+          setJamTersedia(res);
+        });
+      }
     }
   }, [initialData, isUpdate]);
 
