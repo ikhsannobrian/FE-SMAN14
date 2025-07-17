@@ -117,6 +117,7 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
             type="text"
             name="nama"
             placeholder="Anisa Rahmah Kusuma"
+            required
             value={formData.nama}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -129,6 +130,7 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
             type="text"
             placeholder="12.5"
             name="kelas"
+            required
             value={formData.kelas}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -142,6 +144,7 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
           <input
             type="date"
             name="tanggal"
+            required
             value={formData.tanggal}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -152,6 +155,7 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
           <label className="block text-sm font-medium mb-2">Pelanggaran</label>
           <select
             name="pelanggaran"
+            required
             value={formData.pelanggaran}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
@@ -171,6 +175,7 @@ const FormKesiswaan = ({ isEdit = false, initialData = {}, onSubmit }) => {
             type="text"
             placeholder="Atribut tidak lengkap"
             name="penjelasan"
+            required
             value={formData.penjelasan}
             onChange={handleChange}
             className="w-full border-b border-gray-400 focus:outline-none focus:border-blue-500"
